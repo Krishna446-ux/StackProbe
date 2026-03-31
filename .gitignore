@@ -1,14 +1,49 @@
-# dependencies
+# ----------------------
+# Dependencies
+# ----------------------
 node_modules/
 **/node_modules/
 
-# env
-.env*
-**/.env*
+# ----------------------
+# Environment variables
+# ----------------------
+.env
+.env.*
+**/.env
+**/.env.*
 
-# build
+# ----------------------
+# Build outputs
+# ----------------------
 dist/
 build/
-*/.next/
-.DS_Store
+.next/
+**/.next/
+out/
+
+# ----------------------
+# TypeScript
+# ----------------------
 *.tsbuildinfo
+**/*.tsbuildinfo
+
+# ----------------------
+# Logs
+# ----------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ----------------------
+# OS files
+# ----------------------
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# ----------------------
+# Misc
+# ----------------------
+coverage/
+*.pem
