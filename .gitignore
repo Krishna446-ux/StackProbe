@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env
+.env*
+**/.env*
+
+# build
+dist/
+build/
+*/.next/
+.DS_Store
+*.tsbuildinfo
