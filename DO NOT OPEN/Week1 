@@ -1,0 +1,96 @@
+PostgreSQL + Schema Design
+
+Tables:
+	•	users
+	•	repositories
+	•	jobs
+	•	reports
+	•	findings
+Why migrations > manual SQL?
+
+Without migrations:
+	•	You forget what changes you made
+	•	Teammates get inconsistent DBs
+	•	Production breaks
+
+With migrations:
+	•	Version-controlled DB changes
+	•	Reproducible setup
+	•	Safe evolution
+dempotent migration:	
+    •	Running migration twice won’t crash
+	•	Safe in CI/CD
+
+Pino Logging (CRITICAL)
+
+Every request logs:
+	•	method
+	•	path
+	•	status
+	•	duration
+
+how i initilised, 
+use npm init -y sort of id card of pacakge
+npm i express
+npm i -d typescript ts-node @types/node @types/express
+npx tsc --init
+copied this into tsconfig.json
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true
+  }
+}
+
+why do we use /health endpoint, it is suppsoed to be used by orchestrator, eg: railway
+they use it check about the server
+
+
+res.send(): It’s generic. Express looks at what you’re sending (a string, an object, a buffer) and tries to "guess" the Content-Type header for you. If you pass a string, it sets it to text/html. If you pass an object, it actually calls res.json() internally anyway.
+
+res.json(): It’s explicit. It forces the Content-Type header to application/json. It also converts non-objects (like null or undefined) into valid JSON.
+
+why used postgre sql, ? why not mongo db ?
+
+Why Migrations > Manual SQL (INTERVIEW CRITICAL)
+
+Say this clearly:
+
+⸻
+
+1. Reproducibility
+
+“Anyone can clone repo and run migrations to get exact same DB”
+
+⸻
+
+2. Version control
+
+“Schema changes are tracked like code”
+
+⸻
+
+3. Safe evolution
+
+“We can incrementally modify DB without breaking production”
+
+⸻
+
+4. Team consistency
+
+“No manual setup differences across environments”
+
+Learn about pools what are they ? 
+Learn about migration ?
+Learn about zod, 
+why do we use zod(tool to validate a runtime), instead of process.env.database_url
+ Problem with process.env
+	•	everything is a string
+	•	can be undefined
+	•	no validation
+	•	errors happen at runtime

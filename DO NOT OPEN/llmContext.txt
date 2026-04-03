@@ -1,0 +1,112 @@
+
+
+Here's a compact, structured LLM context document distilled from the StackProbe plan:Here is the distilled LLM context you can paste into any system prompt or feed to another model:
+
+---
+
+## StackProbe — LLM Context Document
+
+**Project:** StackProbe — a production-grade async GitHub repository analyzer.
+**Purpose:** Portfolio project demonstrating backend system design for technical interviews.
+**Duration:** 10 weeks. **Stack:** Node.js / TypeScript, React (Vite), PostgreSQL, Redis, Railway.
+
+---
+
+### System architecture
+
+The API accepts a GitHub repo URL, enqueues a BullMQ job to Redis, and responds immediately with `{ repoId, jobId }`. A **separate worker process** dequeues jobs and runs the full analysis pipeline. Results are stored in PostgreSQL and displayed in a React dashboard via polling.
+
+**Two Railway services:** `api` (Express + React static via `express.static`) and `worker`. Both share a PostgreSQL database and Redis instance via Railway shared env vars.
+
+---
+
+### Core pipeline (worker)
+
+1. `git clone --depth 1` repo to `/tmp/stackprobe/{jobId}`
+2. Run ESLint via `child_process.execFile` (never `exec`) with `--format json`, 30s timeout, SIGKILL on timeout
+3. Parse findings → `findings` table; compute quality score (100 − weighted finding count, capped at 500 findings)
+4. Parse `package.json`; query OSV.dev batch API (`POST /v1/querybatch`) for all packages in one call; write vulnerability findings with CVSS-weighted security score
+5. Collect top 10 findings by severity; call Anthropic API for a 3-paragraph executive summary (`max_tokens: 600`)
+6. `try/finally` cleanup of `/tmp/stackprobe/{jobId}` — always runs, success or failure
+
+**Graceful degradation:** OSV timeout → mark security scan incomplete, job still completes. Anthropic failure → `ai_summary: null`, report still valid.
+
+---
+
+### Data model (PostgreSQL)
+
+| Table | Key fields |
+|---|---|
+| `users` | id (UUID), github_id, access_token (AES-256 encrypted) |
+| `repositories` | id, owner, name — unique constraint on (owner, name) |
+| `jobs` | id, repo_id, status (PENDING/RUNNING/COMPLETE/FAILED), failure_reason, started_at, completed_at |
+| `reports` | id, job_id, quality_score, security_score, ai_summary |
+| `findings` | id, report_id, category (quality/security/complexity), severity, rule, message |
+
+---
+
+### Job lifecycle & reliability
+
+- **States:** `PENDING → RUNNING → COMPLETE / FAILED`
+- **Retries:** BullMQ exponential backoff, 3 attempts; exhausted jobs → `FAILED` with `failure_reason`
+- **Stalled job detection:** BullMQ marks job stalled if worker crashes mid-run; next worker restart picks it up
+- **Job timeout:** jobs running over 5 minutes are force-failed
+- **Idempotency:** `repositories` unique constraint on (owner, name); two simultaneous POSTs for the same repo produce one job
+- **Worker heartbeat:** worker writes `worker:heartbeat` Redis key every 30s with 60s TTL; `GET /health/worker` returns 503 if key missing or stale
+
+---
+
+### Auth & ingestion
+
+- GitHub OAuth 2.0 implemented manually (~40 lines); `state` parameter validated to prevent CSRF
+- JWT issued on login, stored as cookie; validated on subsequent requests
+- `POST /repos` validates GitHub URL format, runs idempotency check, creates `repositories` + `jobs` records
+- Rate limiting: `express-rate-limit` — 100 req / 15 min per IP
+
+---
+
+### Static analysis details
+
+- **ESLint:** JS/TS repos only; `execFile` with args array (no shell injection); 30s `AbortController` timeout; output parsed from `--format json`
+- **OSV.dev:** batch endpoint handles up to 100 packages per call; non-semver versions (git hashes, `*`, workspace globs) filtered before query; `devDependencies` flagged as lower severity; 5s timeout with graceful degradation
+- **Redis cache (OSV):** cache-aside, 1-hour TTL — same package+version never queried twice within the hour
+- **Scores:** quality score = 100 − weighted finding count; security score = 100 − weighted CVSS severity sum
+
+---
+
+### Frontend (React / Vite)
+
+- Three screens: GitHub login → repo URL submission form → job status screen
+- Polls `GET /jobs/:id` every 3 seconds; stops polling on COMPLETE or FAILED
+- Full dashboard: repo list, score history chart (Recharts), findings table filterable by severity, AI summary panel, security findings section
+- CORS: `credentials: true`, Railway domain whitelisted in production
+
+---
+
+### Structured logging & observability
+
+- `pino` wired as Express middleware from day one — every request logs method, path, status, duration
+- Worker uses `pino`, never `console.log`
+- `GET /queue/stats` returns BullMQ queue depth, active count, failed count
+
+---
+
+### Scope boundaries
+
+**Included:** Async queue, separate worker process, GitHub OAuth, ESLint scan, OSV.dev vulnerability scan, Anthropic AI summary, quality + security scores, React dashboard with polling, rate limiting, structured logging, temp cleanup, Railway deployment.
+
+**Excluded:** GitHub webhooks, Python/Pylint support, Docker/gVisor sandboxing, RBAC, runtime benchmarking, plugin system, SARIF export, SSE push (polling used instead), Elasticsearch.
+
+---
+
+### Key interview talking points
+
+- "The API never does slow work — responds in milliseconds with a job ID; all analysis runs in a separate worker process"
+- "If the worker crashes, BullMQ stalled-job detection re-queues the job automatically"
+- "Workers are stateless — scaling means running more of them with no code changes"
+- "The system degrades gracefully: OSV or Anthropic down → job still completes with reduced output"
+- "Idempotency is enforced at the DB level (unique constraint) as the authoritative backstop"
+
+---
+
+You can feed this directly as a system prompt to any LLM, or paste it into a new conversation to ask questions about implementing specific weeks of the project.
