@@ -1,14 +1,14 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
-export const shorthands = undefined;
+exports.shorthands = undefined;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const up = (pgm) => {
+exports.up = (pgm) => {
     const options={
         ifNotExists:true,
     }
@@ -27,7 +27,7 @@ export const up = (pgm) => {
             type:'text'
         },
         "created_at":{
-            default:pgm.func('CURRENT_TIMESTAMP()'),
+            default:pgm.func('now()'),
             type:'timestamp'
         }
     }
@@ -46,7 +46,7 @@ export const up = (pgm) => {
             notNull:true
         },
         'created_at':{
-            default:pgm.func('CURRENT_TIMESTAMP()'),
+            default:pgm.func('now()'),
             type:'timestamp'
         }
     }
@@ -127,7 +127,7 @@ export const up = (pgm) => {
         ,
         'created_at':{
             type:'timestamp',
-            default:pgm.func("CURRENT_TIMESTAMP()")
+            default:pgm.func("now()")
         },
     }
     pgm.createTable("reports", report_columns, options )
@@ -162,7 +162,7 @@ export const up = (pgm) => {
             notNull:true,
         },
         'created_at':{
-            default:pgm.func("CURRENT_TIMESTAMP()"),
+            default:pgm.func("now()"),
             type:'timestamp'
         },
     }
@@ -182,7 +182,7 @@ export const up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
 */
-export const down = (pgm) => {
+exports.down = (pgm) => {
     const options={
         ifExists:true,
     }
