@@ -18,6 +18,7 @@ app.get('/health', (req: Request, res: Response) => {
     res.json({ status: "ok" })
 })
 app.get('/db', async (req: Request, res: Response) => {
+    console.log("Checking DB Connections")
     try {
         const result = await pool.query("SELECT 1");
         res.json({ status: "ok", data: result.rows });
@@ -27,7 +28,7 @@ app.get('/db', async (req: Request, res: Response) => {
     }
 });
 
-app.get("/auth", auth_routes)
+app.use("/auth", auth_routes)
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

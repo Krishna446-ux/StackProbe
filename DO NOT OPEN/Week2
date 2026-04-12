@@ -1,1 +1,28 @@
 State is used to prevent CSRF Attack
+### Tradeoffs
+
+- Polling vs SSE:
+  Chose polling for simplicity and reliability behind proxies; SSE could reduce latency but adds infra complexity.
+
+- BullMQ vs Kafka:
+  BullMQ chosen for simplicity and tight Redis integration; Kafka would be overkill for this scale.
+
+- PostgreSQL vs NoSQL:
+  Strong consistency and relational queries (jobs ↔ reports ↔ findings) made SQL a better fit.
+
+  ### Failure scenarios
+
+- Redis down → API rejects new jobs; existing jobs resume when Redis recovers
+- Worker crash mid-job → BullMQ marks job as stalled and retries
+- Git clone failure → job marked FAILED with reason
+- ESLint timeout → process killed, job continues with partial analysis
+- DB write failure → job retried (idempotent)
+
+### Scaling
+
+- Horizontal scaling via multiple workers
+- Bottleneck: CPU-bound ESLint + network-bound git clone
+- Optimization opportunities:
+  - shallow clones (already used)
+  - caching repo clones
+  - parallelizing OSV + ESLint steps
