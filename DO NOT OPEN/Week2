@@ -26,3 +26,23 @@ State is used to prevent CSRF Attack
   - shallow clones (already used)
   - caching repo clones
   - parallelizing OSV + ESLint steps
+
+Bugs I Fixed,
+Wifi error,  College wifi blocks many ports - Fixed Not able to connect to Railway Database
+
+
+Just like Repo are global, i have made jobs as global too, so if some one asks for the same repo_id as a job previously created then just return the same job_id back, 
+but what about report distribtuion, reports are create per job, so new job new report, 
+
+Now read this properly
+If users enter repo url
+then two things can happend
+Job is running,pending
+or completed 
+in running or pending=> we can return safely and give them the corresponding report,
+in completetd, -> we return it back, but also inform the user it is an old report so you can want to re run the analyis or not option
+We are going to add something to request and that would be force:true or force false 
+
+also we return job_id and status 
+
+Question is how to handle the Reports that will part of week 3 

@@ -1,0 +1,34 @@
+Redis is a in memory key value data strucutre, it has nothing to do with postgres,sql, mongodb, and works seprately
+redis can be used a queue using list but we do not use that because
+1.Job loss->what if worker failed after poping a job
+2.no retry system 
+3.Parrallel workers->When you have multiple parallel workers reading from a Redis List, they are competing blindly. There is no server-side coordination.
+
+Redis Lists don't have a concept of Consumer Groups. Without consumer groups, you miss out on native features like:
+
+Load balancing tasks evenly across workers automatically.
+
+Tracking exactly which worker has been assigned which specific task.
+ 
+Inspecting how long a task has been pending or stuck with a slow worker.
+
+Bull MQ can be divided into three parts
+API, QUEUE, WORKER 
+QUEUE-> needs connection to redis, and name of the queue
+WORKER->needs connection to redis, name of the queue and controller
+
+EACH job(queue elemet) has Job.id, Job.name, Job.data
+For configuration like attemps and backoff attach them where you enqueue an job
+Worker also have there events 
+
+adding jobs requires giving them a name, data and some configurations such as attempts abd backoff
+
+Pino structured JSON logger for Node.js.
+import pino from "pino";
+
+export const logger = pino();
+
+logger.info("normal info");
+logger.warn("something suspicious");
+logger.error("something failed");
+logger.debug("deep debugging");

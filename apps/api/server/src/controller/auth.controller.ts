@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { tokenFetch,userRes,userRecord} from '../services/github.services';
+
 var jwt=require('jsonwebtoken')
 import "dotenv/config";
 let crypto: any;
@@ -9,14 +10,15 @@ try {
     console.error('crypto support is disabled!');
 }
 export const githubLogin= (req: Request, res: Response) => {
-    const state = crypto.randomBytes(16).toString('hex');
     //this the state for github o auth, basically used for preventing csrf attacks
+    const state = crypto.randomBytes(16).toString('hex');
+    //packing client id scope and state together, scope is basically permisson outh login will be given 
     const url =
         `https://github.com/login/oauth/authorize` +
         `?client_id=${process.env.GITHUB_CLIENT_ID}` +
         `&scope=read:user` +
         `&state=${state}`;
-    //cookies
+    //cookies, sending state so that when the callback comes we can verify the request
     res.cookie("oauth_state", state, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -26,7 +28,8 @@ export const githubLogin= (req: Request, res: Response) => {
     res.redirect(url);
 }
 export const githubAccessToken= async (req: Request, res: Response) => {
-        
+        //since these code and state are sent as URL parameters, so they are packed req.qurey
+        //params vs query, query are written after ?, and params are written as a part of url itself
         const { code, state } = req.query;
         const storedState = req.cookies.oauth_state;
         //state validation part of controller
@@ -34,6 +37,7 @@ export const githubAccessToken= async (req: Request, res: Response) => {
             return res.status(400).send("Invalid state");
         }
         if(!code ||typeof code !=="string")return res.status(400).send("Invalid Code");
+        //request is sent to github with creditional and details, to obtain the access token 
         const access_token = await tokenFetch(code);
         if (!access_token||typeof access_token!=="string") {
             return res.status(400).send("Token Not Found");

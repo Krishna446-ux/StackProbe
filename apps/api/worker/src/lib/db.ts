@@ -9,22 +9,19 @@ const onConnect = async (client: ClientBase): Promise<void> => {
         console.log("Failed to connect");
     }
 }
-//port: parseInt(process.env.DB_PORT||"5432"), since .env files only give strings, so typescript givesn error about it being string not an integer
+
 export const pool = new Pool({
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT||"5432"),
-    database: process.env.DB_NAME,
-    
+    //connectionString: process.env.DATABASE_URL,
+    user: process.env.DB_USER || "postgres",
+    password: process.env.DB_PASSWORD || "postGres",
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "5432"),
+    database: process.env.DB_NAME || "stackprobe",
+
     max: 10,
     idleTimeoutMillis: 20000,
     connectionTimeoutMillis: 10000,
     maxLifetimeSeconds: 60,
-    allowExitOnIdle: true,
     min: 3,
     onConnect: onConnect
 })
-// ssl: {
-//         rejectUnauthorized: false,
-//     },
