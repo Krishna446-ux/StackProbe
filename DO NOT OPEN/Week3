@@ -32,3 +32,6 @@ logger.info("normal info");
 logger.warn("something suspicious");
 logger.error("something failed");
 logger.debug("deep debugging");
+
+
+We checked by killing the worker midway if the stalled job(A job BullMQ thought was being worked on, but the worker disappeared before finishing it.) restart back when the worker starts working again and yes they did

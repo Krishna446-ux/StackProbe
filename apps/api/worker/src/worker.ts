@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq'
-import processorFunction from './processors/analysis_processor.js'
+import { processorFunction, onFaliure, onCompletion } from './processors/analysis_processor.js'
 import logger from './lib/logger.js';
 import "dotenv/config"
 const connection = {
@@ -12,23 +12,7 @@ export const worker = new Worker('analysis', processorFunction, {
     connection
 })
 //events on workers
-worker.on("completed", (job) => {
-    logger.info(
-        {
-            jobId: job.id,
-            jobName: job.name,
-            data: job.data,
-        },
-        "Job completed"
-    );
-})
-worker.on("failed", (job: any) => {
-    logger.info(
-        {
-            jobId: job.id,
-            jobName: job.name,
-            data: job.data,
-        }, "Job Failed")
-})
+worker.on("completed", onCompletion)
+worker.on("failed", onFaliure)
 //needs controller connection to redis and queue name
 //queue name is analysis 

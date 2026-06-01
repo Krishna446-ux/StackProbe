@@ -10,13 +10,13 @@ const onConnect = async (client: ClientBase): Promise<void> => {
     }
 }
 //port: parseInt(process.env.DB_PORT||"5432"), since .env files only give strings, so typescript givesn error about it being string not an integer
-export const pool = new Pool({
+const pool = new Pool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT||"5432"),
+    port: parseInt(process.env.DB_PORT || "5432"),
     database: process.env.DB_NAME,
-    
+
     max: 10,
     idleTimeoutMillis: 20000,
     connectionTimeoutMillis: 10000,
@@ -25,6 +25,7 @@ export const pool = new Pool({
     min: 3,
     onConnect: onConnect
 })
+export default pool;
 // ssl: {
 //         rejectUnauthorized: false,
 //     },

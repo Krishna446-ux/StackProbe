@@ -10,7 +10,7 @@ const onConnect = async (client: ClientBase): Promise<void> => {
     }
 }
 
-export const pool = new Pool({
+const pool = new Pool({
     //connectionString: process.env.DATABASE_URL,
     user: process.env.DB_USER || "postgres",
     password: process.env.DB_PASSWORD || "postGres",
@@ -25,3 +25,4 @@ export const pool = new Pool({
     min: 3,
     onConnect: onConnect
 })
+export default pool;

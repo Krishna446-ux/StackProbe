@@ -1,6 +1,6 @@
-import {Request,Response,Router} from 'express'
-import {makeRepoRecord} from '../controller/repo.controller'
-const router=Router()
+import { Request, Response, Router } from 'express'
+import { makeRepoRecord } from '../controller/repo.controller'
+const router = Router()
 
-router.post("/",makeRepoRecord);
+router.post("/", makeRepoRecord);
 export default router;

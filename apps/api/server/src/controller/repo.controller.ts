@@ -28,11 +28,13 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
     const owner = match[1];
     const name = match[2];
     try {
+
         const details: RepoInterface = await createRepo(owner, name);
 
         // force ==true means create a new job for this repo right now
         //otherwise look for if someone else asked for the same repo or if this repo has been previously processed
         if (force === false) {
+
             const activeJobResult = await activeJob(details.repo_id)
             if ((activeJobResult as any).success === true) {
                 return res.status(200).json({
@@ -40,6 +42,7 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
                     "status": (activeJobResult as any).status,
                 })
             }
+
             const completedJobResult = await completedJob(details.repo_id)
             if ((completedJobResult as any).success === true) {
                 return res.status(200).json({
@@ -66,7 +69,9 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
 
         const jobRecord: JobInterface = await createJob(jobObject);
         //here we are enqueuing the job into the analysis queue
+
         await analysisQueue.add('repo_analysis_job', {
+            "job_id": jobRecord.job_id,
             "repo_id": details.repo_id,
             "repo_url": repoUrl
         }, {
@@ -76,15 +81,30 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
                 delay: 1000
             }
         });
-
+        console.log("done")
         return res.status(200).json(jobRecord)
 
         //return res.status(200).json({ repo: details });
         //200 stuff went on fine
     }
     catch (err: any) {
-        console.log(err);
-        return res.status(500).json({ err: "Databse error in creating the new repo record or adding new job" })
+        console.error("makeRepoRecord failed");
+
+        console.error(err);
+
+        if (err instanceof Error) {
+
+            console.error("message:", err.message);
+
+            console.error("stack:", err.stack);
+
+        }
+
+        return res.status(500).json({
+
+            error: err?.message ?? "Unknown error"
+
+        });
         //500 for database error
     }
 
