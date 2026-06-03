@@ -123,8 +123,7 @@ export const activeJob = async (repo_id: string): Promise<any> => {
         [repo_id])
     if (rows.length > 0) return {
         success: true,
-        job_id: rows[0].job_id,
-        status: rows[0].status
+        job: rows[0]
     };
     else return {
         success: false,
@@ -142,8 +141,7 @@ export const completedJob = async (repo_id: string): Promise<any> => {
         [repo_id])
     if (rows.length > 0) return {
         success: true,
-        job_id: rows[0].job_id,
-        status: rows[0].status
+        job: rows[0],
     };
     else return {
         success: false,

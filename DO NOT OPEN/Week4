@@ -1,0 +1,60 @@
+What is polling?
+
+Suppose the user submits a repo.
+
+Backend responds:
+{
+  "job_id": "123"
+}
+The frontend wants to know:
+Is it done yet?
+
+One way
+Frontend
+    ↓
+GET /jobs/123
+
+3 seconds later
+
+GET /jobs/123
+
+3 seconds later
+
+GET /jobs/123
+
+3 seconds later
+
+GET /jobs/123
+
+This is polling.
+
+The frontend repeatedly asks:
+
+Are we there yet?
+
+Like a child in a car. 😄
+
+What is SSE?
+Frontend
+    ↓
+Open connection
+
+Backend
+    ↓
+status = RUNNING
+    ↓
+push update
+
+Backend
+    ↓
+status = COMPLETE
+    ↓
+push update
+
+The server tells the client when something changes.
+
+No repeated requests.
+
+This is called:
+
+Server Side Events (SSE)

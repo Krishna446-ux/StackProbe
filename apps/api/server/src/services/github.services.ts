@@ -1,4 +1,4 @@
-import { pool } from "../db"
+import pool from "../db"
 interface GithubUser {
     github_id: string;
     access_token: string;

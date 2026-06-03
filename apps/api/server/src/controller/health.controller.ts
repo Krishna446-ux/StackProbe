@@ -1,6 +1,18 @@
 import { request } from "node:http";
 import pool from "../db"
 import { Request, Response } from 'express'
+import { redis } from "../redis"
+export const redisHealth = async (req: Request, res: Response) => {
+    console.log("Checking Redis Connections")
+    try {
+        const reply = await redis.ping();
+        res.json(reply);
+
+    } catch (err: any) {
+        console.error("REDIS ERROR:", err);
+        res.status(500).json({ error: err.message });
+    }
+}
 export const healthDB = async (req: Request, res: Response) => {
     console.log("Checking DB Connections")
     try {
@@ -14,13 +26,7 @@ export const healthDB = async (req: Request, res: Response) => {
 export const health = (req: Request, res: Response) => {
     res.json({ status: "ok" })
 }
-export const jobDetails = async (req: Request, res: Response) => {
-    //get id from url params
-    const { id } = req.params
-    const { rows } = await pool.query('select * from jobs where job_id = $1', [id]);
-    res.json(rows[0])
-    console.log(rows[0]);
-}
+
 export const pinoPretty = {
     // Only use pretty printing in development to save performance in production
     transport: process.env.NODE_ENV !== "production"

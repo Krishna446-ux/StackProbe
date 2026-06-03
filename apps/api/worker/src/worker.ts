@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq'
-import { processorFunction, onFaliure, onCompletion } from './processors/analysis_processor.js'
+import { repoAnalysisProcessor, onFaliure, onCompletion } from './processors/repoAnalysisProcessor.js'
+
 import logger from './lib/logger.js';
 import "dotenv/config"
 const connection = {
@@ -8,7 +9,7 @@ const connection = {
 }
 //basically this is worker end, so it is sitting for any jobs, whenever it comes it will take that job 
 //and give it to processorFunciton(job)
-export const worker = new Worker('analysis', processorFunction, {
+export const worker = new Worker('analysis', repoAnalysisProcessor, {
     connection
 })
 //events on workers

@@ -35,19 +35,38 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
         //otherwise look for if someone else asked for the same repo or if this repo has been previously processed
         if (force === false) {
 
+            //export  interface JobInterface{
+            //     "job_id":'string';
+            //     "repo_id":'string';
+            //     "user_id":'string';
+            //     "status":'string';
+            //     "started_at":'date';
+            //     "completed_at":'date';
+            //     "faliure_reason":'string';
+            // };
             const activeJobResult = await activeJob(details.repo_id)
             if ((activeJobResult as any).success === true) {
                 return res.status(200).json({
-                    "job_id": (activeJobResult as any).job_id,
-                    "status": (activeJobResult as any).status,
+                    "job_id": (activeJobResult as any).job.job_id,
+                    "status": (activeJobResult as any).job.status,
+                    "repo_id": (activeJobResult as any).job.repo_id,
+                    "user_id": (activeJobResult as any).job.user_id,
+                    "started_at": (activeJobResult as any).job.started_at,
+                    "completed_at": (activeJobResult as any).job.completed_at,
+                    "falire_reason": (activeJobResult as any).job.falire_reason,
                 })
             }
 
             const completedJobResult = await completedJob(details.repo_id)
             if ((completedJobResult as any).success === true) {
                 return res.status(200).json({
-                    "job_id": (completedJobResult as any).job_id,
-                    "status": (completedJobResult as any).status,
+                    "job_id": (completedJobResult as any).job.job_id,
+                    "status": (completedJobResult as any).job.status,
+                    "repo_id": (completedJobResult as any).job.repo_id,
+                    "user_id": (completedJobResult as any).job.user_id,
+                    "started_at": (completedJobResult as any).job.started_at,
+                    "completed_at": (completedJobResult as any).job.completed_at,
+                    "falire_reason": (completedJobResult as any).job.falire_reason,
                 })
             }
         }
@@ -57,15 +76,6 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
             "repo_id": details.repo_id,
             "status": "PENDING"
         }
-        //export  interface JobInterface{
-        //     "job_id":'string';
-        //     "repo_id":'string';
-        //     "user_id":'string';
-        //     "status":'string';
-        //     "started_at":'date';
-        //     "completed_at":'date';
-        //     "faliure_reason":'string';
-        // };
 
         const jobRecord: JobInterface = await createJob(jobObject);
         //here we are enqueuing the job into the analysis queue

@@ -1,5 +1,6 @@
 import pool from "../lib/db"
 import logger from "../lib/logger"
+import { ReportInstance } from '../interfaces/report_interface.js';
 // const job_columns={
 //         "job_id":{
 //             type:'uuid',
@@ -79,6 +80,12 @@ export const setJobStatus = async (job_id: string, status: string, faliure_reaso
         console.log(err);
     }
 };
+export const setReportDetails = async (report: ReportInstance) => {
+    const { rows } = await pool.query("insert into reports (job_id,quality_score,security_score,ai_summary) values ($1,$2,$3,$4) RETURNING *",
+        [report.job_id, report.quality_score, report.security_score, report.ai_summary]
+    );
+    return rows[0];
+}
 /*
 This is how the insides of row[0] looks like
 {

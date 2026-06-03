@@ -1,16 +1,20 @@
 const express = require('express')
 import { Request, Response } from 'express'
-//import { pool } from "./db"
 import pinoHttp from "pino-http";
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
-import { healthDB, health, jobDetails, pinoPretty } from './controller/health.controller'
+import { healthDB, health, pinoPretty, redisHealth } from './controller/health.controller'
+import { jobDetails, reportDetails } from './front_end_controllers/job_report_details'
 import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
-import { redis } from "./redis"
+import 'dotenv/config'
+import cors from 'cors'
 const app = express()
-
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+}));
 app.use(cookieParser())
 app.use(express.json())
 app.use(pinoHttp(pinoPretty));
@@ -20,18 +24,12 @@ app.get('/', (req: Request, res: Response) => {
 })
 app.get('/health', health)
 app.get('/db', healthDB);
-app.get("/jobs/:id", jobDetails);
-app.get('/redis', async (req: Request, res: Response) => {
-    console.log("Checking Redis Connections")
-    try {
-        const reply = await redis.ping();
-        res.json(reply);
+//FRONT END APIS
+app.get("/jobs/:id", jwtAuthenticator, jobDetails);
+app.get("/reports/:id", jwtAuthenticator, reportDetails);
+//FRONT END FINISH
+app.get('/redis',);
 
-    } catch (err: any) {
-        console.error("REDIS ERROR:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
 app.use("/auth", auth_routes)
 //jwtAuthenticator is a middleware, whose job is to check each of these routes, and whenever, if they have came with a valid jwt token or not
 app.use("/repos", jwtAuthenticator, repo_routes)
