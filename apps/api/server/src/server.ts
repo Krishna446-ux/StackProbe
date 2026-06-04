@@ -3,11 +3,13 @@ import { Request, Response } from 'express'
 import pinoHttp from "pino-http";
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
-import { healthDB, health, pinoPretty, redisHealth } from './controller/health.controller'
+import { healthDB, healthServer, pinoPretty, redisHealth } from './controller/health.controller'
 import { jobDetails, reportDetails } from './front_end_controllers/job_report_details'
 import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
+import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
+
 import 'dotenv/config'
 import cors from 'cors'
 const app = express()
@@ -19,11 +21,10 @@ app.use(cookieParser())
 app.use(express.json())
 app.use(pinoHttp(pinoPretty));
 const port = 3000
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World!')
-})
-app.get('/health', health)
-app.get('/db', healthDB);
+
+//HEALTH CHECK
+app.use('/health', health_router)
+
 //FRONT END APIS
 app.get("/jobs/:id", jwtAuthenticator, jobDetails);
 app.get("/reports/:id", jwtAuthenticator, reportDetails);

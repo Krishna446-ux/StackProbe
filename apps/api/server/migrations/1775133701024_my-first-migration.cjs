@@ -32,25 +32,7 @@ exports.up = (pgm) => {
             type: 'timestamp'
         }
     }
-    const repo_columns = {
-        'repo_id': {
-            type: 'uuid',
-            primaryKey: true,
-            default: pgm.func("gen_random_uuid()")
-        },
-        'owner': {
-            type: 'text',
-            notNull: true
-        },
-        'name': {
-            type: 'text',
-            notNull: true
-        },
-        'created_at': {
-            default: pgm.func('now()'),
-            type: 'timestamp'
-        }
-    }
+
     const job_columns = {
         "job_id": {
             type: 'uuid',

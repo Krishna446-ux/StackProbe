@@ -9,8 +9,16 @@ interface jobObject {
     "repo_id": string;
     "status": string;
 }
+
+//HANDLING RACE CONDTIONS
+//Exactly how does the code prepare in case two requests simulatanleously asking for the same repo to
+// to be inserted are posted? Answer-> We do it using databases, all the requests are sent to databses, it 
+// is there job to make sure duplicates do not happen
+// Here, we added 
 export const makeRepoRecord = async (req: Request, res: Response) => {
+
     const { repoUrl, force = false } = req.body;
+    //force means regardless create a job, so just do not check if there is any active job or not.
     if (!repoUrl) {
         return res.status(400).send("Repo url not found");
         //401 for auth error
@@ -44,6 +52,13 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
             //     "completed_at":'date';
             //     "faliure_reason":'string';
             // };
+            // this part causes race condtions since, both the request come, check for active jobs finds out there are none, and create there two serpate jobs, to fix this ,we have to make sure that a job there can only be single repo:id exists when status is running and pending
+            // WARNING:
+            // Race condition possible here.
+            // Two concurrent force=false requests can both pass the activeJob()
+            // check and create separate jobs.
+            //
+            // Future fix: DB-backed idempotency / transactional locking.
             const activeJobResult = await activeJob(details.repo_id)
             if ((activeJobResult as any).success === true) {
                 return res.status(200).json({

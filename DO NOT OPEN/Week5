@@ -1,0 +1,30 @@
+Task 1-> ADded faliure reason to the jobs fields, by putting it into the function that will run in case the job fails
+Task 2->
+Queue Events in bullmq attach themselves to the redis pub/sub stream, a listener, Allows your application to monitor job lifecycles globally, even when a completely different server or process that the one running the workers
+
+1.completed
+queueEvents.on('completed',(jobId,return Value)=>{ ,  , we attached the listener to the queue using its name, each time its a job get completed, this listner will give jobid values and the return value has the value given by the processor function 
+})
+
+2.failed
+this fires when a job throws error during execution and exhausts its attempt limits(or if it's set to not retry)
+What you get: jobId and failedReason (the error message thrown by your worker).
+
+Best used for: Alerting your development team (e.g., Slack/Sentry), logging errors, or moving a user's request to a "failed" state.
+
+3.stalled
+a 'stalled' job is a bit unique, it means w worker started processing the job but suddenly went siler, usially because the server crashed rand out of meemeory ,or the node.js event loop too kfar too long.byll mq automicatically detect that the worker missed its heartbeat and check in and mark it as stalled,
+what you get is job ID- > This job gets automatically requeued back into the worker queue upto the max stalled count set as configured in worker settings
+
+ADDING WORKER HEARTBEAT->“Can this system currently process jobs?”
+
+why queue.events of stalled won't workout
+In case of empty queue and worker crashed the shit won't work even 
+if worker was working on a job and then it crashed, even then the same job gets stalled, gets requed, but that won't 
+still tell us that worker has crashed
+
+“Any known limitations?”
+
+You can answer:
+
+“Repository creation is idempotent via a unique database constraint. Job creation still has a small race window under concurrent submissions because force-refresh jobs are allowed. I’ve documented it and would solve it with transactional locking or a dedicated idempotency mechanism in a future iteration.”

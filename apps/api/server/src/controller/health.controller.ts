@@ -1,32 +1,58 @@
 import { request } from "node:http";
+import logger from '../services/logger'
 import pool from "../db"
 import { Request, Response } from 'express'
 import { redis } from "../redis"
-export const redisHealth = async (req: Request, res: Response) => {
-    console.log("Checking Redis Connections")
-    try {
-        const reply = await redis.ping();
-        res.json(reply);
-
-    } catch (err: any) {
-        console.error("REDIS ERROR:", err);
-        res.status(500).json({ error: err.message });
-    }
-}
 export const healthDB = async (req: Request, res: Response) => {
-    console.log("Checking DB Connections")
+    logger.info("Checking DB Connections")
     try {
         const result = await pool.query("SELECT 1");
-        res.json({ status: "ok", data: result.rows });
+        res.json({ status: "ONLINE", data: result.rows });
     } catch (err: any) {
-        console.error("DB ERROR:", err);
-        res.status(500).json({ error: err.message });
+        logger.error({ err }, "DB ERROR:");
+        res.status(500).json({ status: "OFFLINE" });
     }
 }
-export const health = (req: Request, res: Response) => {
+export const healthServer = (req: Request, res: Response) => {
     res.json({ status: "ok" })
 }
+export const healthWorker = async (req: Request, res: Response) => {
+    try {
+        const workerHeartbeat = await redis.get("worker:heartbeat")
+        //console.log(workerHeartbeat)
+        if (!workerHeartbeat)
+            return res.status(503).json({ "status": "OFFLINE" });
 
+        return res.json({ "status": "ONLINE" });
+    }
+    catch (err: any) {
+        logger.error(
+            { err },
+            "Failed to check worker heartbeat"
+        );
+        return res.status(503).json({
+            "status": "Unknown"
+        });
+    }
+}
+export const healthRedis = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const reply = await redis.ping();
+        if (reply === 'PONG') {
+            res.status(200).json({ status: 'ONLINE', });
+            return;
+        }
+
+    } catch (err: any) {
+        logger.error({ err }, "Redis health check failed")
+        res.status(500).json({
+            status: 'OFFLINE',
+        });
+    }
+};
+export const queueStats = async (req: Request, res: Response) => {
+    re
+}
 export const pinoPretty = {
     // Only use pretty printing in development to save performance in production
     transport: process.env.NODE_ENV !== "production"
