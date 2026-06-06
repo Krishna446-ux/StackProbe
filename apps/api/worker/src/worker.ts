@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq'
-import { repoAnalysisProcessor, onFaliure, onCompletion } from './processors/repoAnalysisProcessor.js'
+import { repoAnalysisProcessor } from './jobs/repoAnalysisProcessor.js'
+import { onCompletion, onFaliure } from './events/worker.events'
 import { QueueEvents } from 'bullmq';
 import redis from "./lib/redis"
 import logger from './lib/logger.js';
@@ -11,7 +12,13 @@ const connection = {
 
 //basically this is worker end, so it is sitting for any jobs, whenever it comes it will take that job 
 //and give it to processorFunciton(job)
+
 export const worker = new Worker('analysis', repoAnalysisProcessor, { connection })
+// This is the job object inserted inside the queue
+//"job_id": jobRecord.job_id,
+//"repo_id": details.repo_id,
+//"repo_url": repoUrl
+
 
 //Creating heartbeat over here, reason being, if the worker crashes, then this program basically dies of
 //So now in case this file(the worker) crashes, the heartbeast stores in redis will expire

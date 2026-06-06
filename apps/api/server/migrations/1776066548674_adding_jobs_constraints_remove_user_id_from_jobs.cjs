@@ -9,14 +9,14 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-    //pgm.addConstraint( tablename, constraint_name, expression )
-    pgm.dropConstraint("jobs", "jobs_foreign_user_id", { ifExists: true });
-    pgm.dropColumn("jobs", "user_id", { ifExists: true });
-    pgm.createIndex("jobs", "repo_id", {
-        name: "unique_active_job_per_repo",
-        unique: true,
-        where: "status IN ('PENDING','RUNNING')",
-    });
+  //pgm.addConstraint( tablename, constraint_name, expression )
+  pgm.dropConstraint("jobs", "jobs_foreign_user_id", { ifExists: true });
+  pgm.dropColumn("jobs", "user_id", { ifExists: true });
+  pgm.createIndex("jobs", "repo_id", {
+    name: "unique_active_job_per_repo",
+    unique: true,
+    where: "status IN ('PENDING','RUNNING')",
+  });
 };
 
 /**

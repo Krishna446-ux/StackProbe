@@ -5,7 +5,7 @@ import "dotenv/config"
 //needs a queue name and redis connection
 //redis connection
 //analysis is the queue name, we export it
-
-export const analysisQueue = new Queue('analysis', { connection })
+const analysisQueue = new Queue('analysis', { connection })
+export default analysisQueue;
 
 

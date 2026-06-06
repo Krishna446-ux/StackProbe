@@ -3,18 +3,18 @@ import { Request, Response } from 'express'
 import pinoHttp from "pino-http";
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
-import { healthDB, healthServer, pinoPretty, redisHealth } from './controller/health.controller'
+import { healthDB, healthServer, pinoPretty } from './controller/health.controller'
 import { jobDetails, reportDetails } from './front_end_controllers/job_report_details'
 import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
-
+//FUTURE TODO: Needs to redirect the user towards the login page in case there jwt token expires
 import 'dotenv/config'
 import cors from 'cors'
 const app = express()
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
 app.use(cookieParser())

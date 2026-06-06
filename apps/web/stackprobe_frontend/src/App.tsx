@@ -16,7 +16,7 @@ function App() {
   // "quality_score": 0,
   // "security_score": 0,
   // "ai_summary": ""
-  const [faliure_reason, setFaliureReason] = useState("");
+  //const [faliure_reason, setFaliureReason] = useState("");
   //const [loading, setLoading] = useState(false);
   //async function returns a promise, useEffect function expects a either function(cleanup) or nothing is returned, So 
   // before the components render, we are checking if this user has a valid jwt cookie or not,
@@ -24,7 +24,7 @@ function App() {
   useEffect(() => {
     const authenticateMe = async (): Promise<void> => {
       try {
-        const response = await fetch(import.meta.env.VITE_BACKEND_URL + "auth/me", {
+        const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/me", {
           credentials: 'include'
         })
         const data: authenticateMe_interface = await response.json();
@@ -45,7 +45,7 @@ function App() {
     const interval = setInterval(async () => {
       try {
         console.log(jobId)
-        let response = await fetch(import.meta.env.VITE_BACKEND_URL + `jobs/${jobId}`, {
+        let response = await fetch(import.meta.env.VITE_BACKEND_URL + `/jobs/${jobId}`, {
           credentials: 'include'
         })
         let data: JobInterface = await response.json();
@@ -57,7 +57,7 @@ function App() {
           // now decide on the report
           if (status === 'COMPLETE') {
             try {
-              response = await fetch(import.meta.env.VITE_BACKEND_URL + `reports/${jobId}`, {
+              response = await fetch(import.meta.env.VITE_BACKEND_URL + `/reports/${jobId}`, {
                 credentials: 'include'
               })
               data = await response.json();
@@ -67,9 +67,6 @@ function App() {
             catch (err: any) {
               console.log("Report could not be fetched", err)
             }
-          }
-          else {
-            setFaliureReason(data.faliure_reason);
           }
           clearInterval(interval);
         }
@@ -88,7 +85,7 @@ function App() {
       "force": force
     }
     try {
-      const response = await fetch(import.meta.env.VITE_BACKEND_URL + "repos", {
+      const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/repos", {
         method: "POST",
         credentials: 'include',
         headers: {

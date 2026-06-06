@@ -1,6 +1,7 @@
 import pool from "../lib/db"
 import logger from "../lib/logger"
 import { ReportInstance } from '../interfaces/report_interface.js';
+
 // const job_columns={
 //         "job_id":{
 //             type:'uuid',
@@ -45,7 +46,7 @@ export const setJobStatus = async (job_id: string, status: string, faliure_reaso
                 [job_id, status]
             );
             if (rows.length === 0)
-                logger.error("Job status did not got updated to running")
+                throw new Error("Job status did not got updated to running")
             return rows[0];
         }
         else if (status === "COMPLETE") {
@@ -58,7 +59,7 @@ export const setJobStatus = async (job_id: string, status: string, faliure_reaso
                 [job_id, status]
             );
             if (rows.length === 0)
-                logger.error("Job status did not got updated to completed")
+                throw new Error("Job status did not got updated to completed")
             return rows[0];
         }
         else {
@@ -71,21 +72,15 @@ export const setJobStatus = async (job_id: string, status: string, faliure_reaso
                 [job_id, status, faliure_reason]
             );
             if (rows.length === 0)
-                logger.error("Job status did not got updated to falied")
+                throw new Error("Job status did not got updated to falied")
             return rows[0];
         }
     }
     catch (err: any) {
-        logger.error("Error in setting job status", err);
-        console.log(err);
+        logger.error({ err }, "Error in setting job status");
+        throw err;
     }
 };
-export const setReportDetails = async (report: ReportInstance) => {
-    const { rows } = await pool.query("insert into reports (job_id,quality_score,security_score,ai_summary) values ($1,$2,$3,$4) RETURNING *",
-        [report.job_id, report.quality_score, report.security_score, report.ai_summary]
-    );
-    return rows[0];
-}
 /*
 This is how the insides of row[0] looks like
 {

@@ -4,6 +4,7 @@
 node_modules/
 **/node_modules/
 
+
 # ----------------------
 # Environment variables
 # ----------------------
@@ -20,6 +21,7 @@ build/
 .next/
 **/.next/
 out/
+**/tmp/**
 
 # ----------------------
 # TypeScript

@@ -27,4 +27,11 @@ still tell us that worker has crashed
 
 You can answer:
 
-“Repository creation is idempotent via a unique database constraint. Job creation still has a small race window under concurrent submissions because force-refresh jobs are allowed. I’ve documented it and would solve it with transactional locking or a dedicated idempotency mechanism in a future iteration.”
+“Repository creation is idempotent via a unique database constraint. Job creation still has a small race window under concurrent submissions because force-refresh jobs are allowed. I’ve documented it and would solve it with transactional locking or a dedicated idempotency mechanism in a future iteration.”-> They are reffering to active jobs, each active job first checks if there is already a job running or pending for this repo. Then returns that job.
+
+RUN eslint, use it fill the findinging table, and assess the quality score.
+
+DIFFICULTY-> Had to reaslise the es lint throws error codesand each my code was marking the 1 as an error, where it is correct thing atleast for me 
+0 = no lint errors
+1 = lint errors found
+2 = configuration/runtime failure 

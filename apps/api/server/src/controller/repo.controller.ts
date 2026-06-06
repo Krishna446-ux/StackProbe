@@ -4,7 +4,8 @@ import { activeJob, completedJob } from '../services/repo.services'
 import { RepoInterface } from '../interfaces/repoInterface'
 import { JobInterface } from '../interfaces/jobInterface'
 import { Request, Response } from 'express'
-import { analysisQueue } from '../queues/analysis.queue'
+import analysisQueue from '../queues/analysis.queue'
+import logger from '../services/logger'
 interface jobObject {
     "repo_id": string;
     "status": string;
@@ -94,7 +95,11 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
 
         const jobRecord: JobInterface = await createJob(jobObject);
         //here we are enqueuing the job into the analysis queue
-
+        logger.info({
+            "job_id": jobRecord.job_id,
+            "repo_id": details.repo_id,
+            "repo_url": repoUrl
+        }, " JOB ENQUEUED START")
         await analysisQueue.add('repo_analysis_job', {
             "job_id": jobRecord.job_id,
             "repo_id": details.repo_id,
@@ -106,7 +111,12 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
                 delay: 1000
             }
         });
-        console.log("done")
+        logger.info({
+            "job_id": jobRecord.job_id,
+            "repo_id": details.repo_id,
+            "repo_url": repoUrl
+        }, " JOB ENQUEUED DONE")
+
         return res.status(200).json(jobRecord)
 
         //return res.status(200).json({ repo: details });

@@ -1,11 +1,10 @@
+import pool from '../db'
 import { RepoInterface } from '../interfaces/repoInterface'
-//import { JobInterface } from '../interfaces/jobInterface'
+import { JobInterface } from '../interfaces/jobInterface';
 interface jobObject {
     "repo_id": string;
     "status": string;
 }
-import pool from '../db'
-import { JobInterface } from '../interfaces/jobInterface';
 //  'repo_id':{
 //             type:'uuid',
 //             primaryKey:true,

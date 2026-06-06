@@ -32,6 +32,25 @@ exports.up = (pgm) => {
             type: 'timestamp'
         }
     }
+    const repo_columns = {
+        'repo_id': {
+            type: 'uuid',
+            primaryKey: true,
+            default: pgm.func("gen_random_uuid()")
+        },
+        'owner': {
+            type: 'text',
+            notNull: true
+        },
+        'name': {
+            type: 'text',
+            notNull: true
+        },
+        'created_at': {
+            default: pgm.func('now()'),
+            type: 'timestamp'
+        }
+    }
 
     const job_columns = {
         "job_id": {
@@ -78,7 +97,7 @@ exports.up = (pgm) => {
     })
     pgm.addConstraint("jobs", 'jobs_foreign_repo_id', {
         foreignKeys: {
-            columns: 'repo_id',
+            columns: ['repo_id'],
             references: 'repositories(repo_id)',
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',

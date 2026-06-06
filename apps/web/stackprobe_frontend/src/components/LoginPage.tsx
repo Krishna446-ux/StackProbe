@@ -3,7 +3,7 @@ import React from 'react';
 const LoginPage = () => {
     function handleLogin() {
         // Navigates the entire browser window to your backend OAuth starter route
-        window.location.href = 'http://localhost:3000/auth/github';
+        window.location.href = import.meta.env.VITE_BACKEND_URL + '/auth/github';
     }
 
     return (

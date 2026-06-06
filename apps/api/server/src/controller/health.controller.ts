@@ -3,6 +3,7 @@ import logger from '../services/logger'
 import pool from "../db"
 import { Request, Response } from 'express'
 import { redis } from "../redis"
+import myQueue from "../queues/analysis.queue"
 export const healthDB = async (req: Request, res: Response) => {
     logger.info("Checking DB Connections")
     try {
@@ -50,8 +51,9 @@ export const healthRedis = async (req: Request, res: Response): Promise<void> =>
         });
     }
 };
+
 export const queueStats = async (req: Request, res: Response) => {
-    re
+    res.json(await myQueue.getJobCounts());
 }
 export const pinoPretty = {
     // Only use pretty printing in development to save performance in production
