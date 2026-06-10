@@ -8,12 +8,13 @@ import logger from '../lib/logger.js'
 //     "file_path": string;
 //     "rule": string;
 // };
-export async function reportFindings(report_id: string, esLint: any) {
+export async function reportFindings(report_id: string, esLint: any): Promise<findings_interface[]> {
   try {
     let res: findings_interface[] = [];
+    // 1 is for warning and 2 is for error
     const SEVERITY_MAP = {
-      1: 'LOW',
-      2: 'HIGH'
+      1: 'low',
+      2: 'high'
     };
     for (const files of esLint) {
       const tmp = files.messages.map((msg: any) => {
@@ -28,6 +29,7 @@ export async function reportFindings(report_id: string, esLint: any) {
       res = [...res, ...tmp];
     }
     await insertFindings(report_id, res);
+    return res;
   }
   catch (err: any) {
     logger.info({ err }, "Issue in in creating the findings array or inserting it")

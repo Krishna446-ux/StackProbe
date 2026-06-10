@@ -32,3 +32,25 @@ export async function updateSecurityScore(reportId: string, securityScore: numbe
         throw err;
     }
 }
+export async function updateAiSummary(reportId: string, aiSummary: string | null) {
+    if (aiSummary === null) {
+        aiSummary = "AI Summary is Unavailable";
+    }
+    try {
+
+        logger.info("Updating AI Summary in report")
+        const { rows } = await pool.query("update reports set ai_summary=$1,scan_completed=true where report_id=$2 RETURNING *",
+            [aiSummary, reportId])
+        if (rows.length === 0) {
+            throw new Error(
+                `Report ${reportId} not found`
+            );
+        }
+        return rows[0].report_id
+    }
+    catch (err: any) {
+        logger.error({ err }, "Error updating AI Summary in report");
+        throw err;
+    }
+
+}

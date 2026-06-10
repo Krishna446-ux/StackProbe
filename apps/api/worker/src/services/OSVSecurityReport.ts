@@ -202,7 +202,7 @@ async function OSVSecurityReport(dependencies: Dependency[]): Promise<{ findings
 
 
         const controller = new AbortController();
-        timer = setTimeout(() => { controller.abort() }, 60000);
+        timer = setTimeout(() => { controller.abort() }, 10000);
 
         const response = await fetch("https://api.osv.dev/v1/querybatch", {
             signal: controller.signal,
@@ -256,10 +256,19 @@ async function OSVSecurityReport(dependencies: Dependency[]): Promise<{ findings
                 )
             )
         ];
+        const controller2 = new AbortController();
+
+        const timeout2 = setTimeout(() => {
+
+            controller2.abort();
+
+        }, 5000);
+
+
         const advisoryFindings = await Promise.all(
             advisoryIds.map(async (advisoryId): Promise<findings_interface | null> => {
                 try {
-                    const heavy = await fetch(`https://api.osv.dev/v1/vulns/${advisoryId}`);
+                    const heavy = await fetch(`https://api.osv.dev/v1/vulns/${advisoryId}`, { signal: controller2.signal });
                     if (!heavy.ok) {
                         const errorText = await heavy.text();
                         logger.error((`Failed to fetch advisory ${advisoryId},error: ${errorText}`));
@@ -289,8 +298,11 @@ async function OSVSecurityReport(dependencies: Dependency[]): Promise<{ findings
                     logger.error({ err }, `Error while fetching advisory ${advisoryId}`);
                     return null;
                 }
+
+
             })
         );
+        clearTimeout(timeout2)
         findings.push(...advisoryFindings.filter((finding): finding is findings_interface => finding !== null));
         return {
             "findings": findings,
