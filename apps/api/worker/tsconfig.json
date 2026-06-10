@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "lib": [
       "ES2022"
-    ], // ES2020 in earlier versions
-    "module": "ES2022", //ESNext 
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "target": "ES2023",
+    ],
     "rootDir": "./src",
     "outDir": "./dist",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "strict": true,
-    "types": [
-      "node"
-    ]
-  }
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*"
+  ]
 }

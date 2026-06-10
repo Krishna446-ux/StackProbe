@@ -1,6 +1,6 @@
-import logger from '../lib/logger'
+import logger from '../lib/logger.js'
 export function calculateQualityScore(eslintJsonData: any) {
-    let totalFiles = eslintJsonData.length;
+    const totalFiles = eslintJsonData.length;
 
     // If the repo is completely empty, give it a perfect score
     if (totalFiles === 0) return 0;
@@ -35,7 +35,7 @@ export function calculateQualityScore(eslintJsonData: any) {
     const penaltyPerFile = totalDeduction / totalFiles;
 
     // Start at 100 and subtract the penalty per file (scaled up so it hits the score noticeably)
-    let finalScore = Math.round(100 - (penaltyPerFile * 2));
+    let finalScore = Math.round(100 - (penaltyPerFile * 3));
 
     // 5. Cap the score between 0 and 100
     finalScore = Math.max(0, Math.min(100, finalScore));

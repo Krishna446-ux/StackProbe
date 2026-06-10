@@ -28,6 +28,7 @@ app.use('/health', health_router)
 //FRONT END APIS
 app.get("/jobs/:id", jwtAuthenticator, jobDetails);
 app.get("/reports/:id", jwtAuthenticator, reportDetails);
+
 //FRONT END FINISH
 app.get('/redis',);
 

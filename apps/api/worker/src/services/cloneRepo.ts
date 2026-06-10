@@ -1,7 +1,7 @@
 // reposible for clowing 
 import { spawn } from 'node:child_process'
 import path from 'path';
-import logger from '../lib/logger'
+import logger from '../lib/logger.js'
 import fs from 'node:fs/promises'
 const projectRoot = process.cwd();// cwd stands current working directory, basically gives absolute address to the worker
 export const cloneRepo = async (repoUrl: string, jobId: string): Promise<string> => {
@@ -11,7 +11,7 @@ export const cloneRepo = async (repoUrl: string, jobId: string): Promise<string>
     const clonePath = path.join(projectRoot, "tmp", "stackprobe", jobId);
     const timeout = setTimeout(() => {
         child.kill("SIGKILL");
-    }, 100 * 60000);
+    }, 2 * 60000);
     await fs.mkdir(path.dirname(clonePath), { recursive: true });
 
     // this spawn function returns immediately, this is not a promise, so how do we make sure the process waits for the clone to finish ? By converting it into a promise which only resolves in case the function succeeds

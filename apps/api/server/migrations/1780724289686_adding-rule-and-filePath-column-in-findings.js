@@ -8,6 +8,40 @@ exports.shorthands = undefined;
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
+/*
+        "finding_id": {
+            type: 'uuid',
+            primaryKey: true,
+            default: pgm.func('gen_random_uuid()'),
+        },
+        'report_id': {
+            type: 'uuid',
+            notNull: true,
+        },
+        "category": {
+            type: 'text',
+            notNull: true,
+
+        },
+        "severity": {
+            type: 'text',
+            notNull: true,
+
+        },
+        "message": {
+            type: 'text',
+            notNull: true,
+        },
+        'created_at': {
+            default: pgm.func("now()"),
+            type: 'timestamp'
+        },
+    }
+    pgm.addColumn('findings', {
+        rule: { type: 'varchar(255)', notNull: false }, // Set to true if EVERY finding MUST have a rule
+        filePath: { type: 'varchar(255)', notNull: true }
+    });
+ */
 exports.up = (pgm) => {
     pgm.addColumn('findings', {
         rule: { type: 'varchar(255)', notNull: false }, // Set to true if EVERY finding MUST have a rule

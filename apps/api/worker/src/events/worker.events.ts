@@ -1,6 +1,5 @@
-import pino from '../lib/db'
-import logger from '../lib/logger'
-import { setJobStatus, setReportDetails } from '../repositories/jobRepository'
+import logger from '../lib/logger.js'
+import { setJobStatus } from '../repositories/jobRepository.js'
 
 export const onCompletion = async (job: any) => {
     await setJobStatus(job.data.job_id, "COMPLETE", "");

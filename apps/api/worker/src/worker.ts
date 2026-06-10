@@ -1,8 +1,7 @@
 import { Worker } from 'bullmq'
 import { repoAnalysisProcessor } from './jobs/repoAnalysisProcessor.js'
-import { onCompletion, onFaliure } from './events/worker.events'
-import { QueueEvents } from 'bullmq';
-import redis from "./lib/redis"
+import { onCompletion, onFaliure } from './events/worker.events.js'
+import redis from "./lib/redis.js"
 import logger from './lib/logger.js';
 import "dotenv/config"
 const connection = {

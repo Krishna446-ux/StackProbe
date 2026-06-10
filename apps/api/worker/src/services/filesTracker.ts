@@ -1,6 +1,6 @@
 import { glob } from "glob";
 import path from 'path'
-import logger from '../lib/logger'
+import logger from '../lib/logger.js'
 const projectPath = process.cwd();
 async function fileSearcher(jobId: string): Promise<string[]> {
     logger.info("Searching for all files and checking if ts/js files present")

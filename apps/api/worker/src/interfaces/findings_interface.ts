@@ -25,7 +25,7 @@
 //             default: pgm.func("now()"),
 //             type: 'timestamp'
 //         },
-export interface findings_interface {
+export default interface findings_interface {
     "category": string;
     "severity": string;
     "message": string;

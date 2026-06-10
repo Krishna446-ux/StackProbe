@@ -1,6 +1,6 @@
-import { ReportInstance } from '../interfaces/report_interface';
-import logger from '../lib/logger'
-import pool from '../lib/db'
+import { ReportInstance } from '../interfaces/report_interface.js';
+import logger from '../lib/logger.js'
+import pool from '../lib/db.js'
 export async function insertReport(report: ReportInstance): Promise<string> {
     try {
         logger.info("Inserting report into database")
@@ -10,6 +10,25 @@ export async function insertReport(report: ReportInstance): Promise<string> {
     }
     catch (err: any) {
         logger.error({ err }, "Error inserting report");
+        throw err;
+    }
+}
+
+export async function updateSecurityScore(reportId: string, securityScore: number | null) {
+    try {
+
+        logger.info("Updating score in report")
+        const { rows } = await pool.query("update reports set security_score=$1,scan_completed=true where report_id=$2 RETURNING *",
+            [securityScore, reportId])
+        if (rows.length === 0) {
+            throw new Error(
+                `Report ${reportId} not found`
+            );
+        }
+        return rows[0].report_id
+    }
+    catch (err: any) {
+        logger.error({ err }, "Error updating security score in report");
         throw err;
     }
 }

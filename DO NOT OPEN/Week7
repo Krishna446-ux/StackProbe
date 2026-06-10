@@ -1,0 +1,153 @@
+IMPORTANT-> stack probe only supports package-lock.json for security scans 
+
+Week 6 is not written because there is an issue in numbering, i have not wrote the week where it was just frontend
+
+dependencies-> These are the packages that are absolutely needed at the time of production, they are the core logic of the application/website that you are building, and are needed, otherwise the app will crash or fail
+Installed  both in developement and production example->express,react, lodash,mongoose
+
+dev dependencies->these are the packages that you only need while you are locally writing/testinf or building the code, they are completely stripped out when you are app is deploye
+when are they instlled- ? Only when you are workinglocally they are ignored when you install for production 
+example eslint jest nodemon 
+
+Vulnerability is a flaw, bug, or loophole in a program’s code that an attacker can exploit to make the software do something it wasn't supposed to do.
+example->Remote Code Execution (RCE),Denial Of Service (DoS), Prototype of pollution
+
+When a vulnerability is found in a package, the risk level depends entirely on who can talk to that package.
+
+Understanding how vulnerabilty appearing in different packages represent different threat to security
+
+Express (The Exposed Front Door)
+Express is a web server framework. Its entire purpose is to listen to the open internet and handle incoming requests from anyone, anywhere.
+
+If Express has an RCE vulnerability, a hacker sitting across the world can send a specifically crafted HTTP request to your live server IP address.
+
+Because Express automatically processes that request, the vulnerability triggers, and the hacker instantly gains access to your production database or server backend. You have zero control over who tries to exploit it.
+
+ESLint (The Locked Private Office)
+ESLint is a command-line tool that reads your local text files to check for syntax errors. It does not open a port to the internet. It does not listen for incoming network traffic.
+
+For a hacker to exploit a vulnerability in ESLint, they would have to convince you to download a highly specific, malicious JavaScript file onto your computer, and then trick you into running ESLint on that specific file.
+
+Because it only interacts with the files sitting on your local hard drive, the "attack surface" is practically zero unless your machine is already compromised.
+
+Semantic Versioning (SemVer) is the universal language npm uses to manage package versions. It prevents your app from breaking when a dependency updates.
+MAJOR.MINOR.PATCH 
+1.   .   2 .  0. 
+
+MAJOR (1): Breaking changes. Code written for version 1 might crash if upgraded to version 2.
+
+MINOR (2): New features, but completely backward-compatible. Safe to upgrade.
+
+PATCH (0): Backward-compatible bug fixes and optimizations. Extremely safe to upgrade.
+
+Deciphering the Caret (^) and Tilde (~)
+These prefixes tell npm how flexible it can be when you run npm update or npm install.
+
+The Caret (^1.2.0)
+The caret is the npm default. It says: "Give me bug fixes and new features, but do not update the major version because that will break my code."
+^1.2.0 means: >=1.2.0 <2.0.0
+
+What it allows: 1.2.1, 1.3.0, 1.9.5
+
+What it blocks: 2.0.0 (it locks the 1)
+The Tilde (~1.2.0)
+The tilde is much more conservative. It says: "I only want bug fixes. Do not add new features, and definitely don't break anything."
+~1.2.0 means: >=1.2.0 <1.3.0
+
+What it allows: 1.2.1, 1.2.9
+
+What it blocks: 1.3.0 (it locks the 1.2)
+
+Exact Version (1.2.0)
+If there is no symbol at all, it is locked down completely.
+What it allows: Only 1.2.0. No updates ever, not even an urgent security patch.
+
+The Wildcard (*)
+This means absolute freedom (and absolute danger).
+
+What it allows: Any version at all (equivalent to >=0.0.0). It will install the absolute latest release, even if it is a major breaking update like version 5.0.0. Avoid using this in production
+
+what is osv? its stands for Open source vulnerabilities 
+
+types vs interfaces ? 
+
+package.json
+    ↓
+extract dependencies      
+    ↓
+filter invalid versions
+    ↓
+build OSV queries
+    ↓
+call OSV
+    ↓
+parse vulnerabilities
+    ↓
+store findings
+
+What is a controller ? 
+Remote control for async operations
+
+
+TypeScript
+a?.vulns
+database_specific?.severity
+In standard JavaScript, if you try to read a property on something that is undefined or null, your code throws a fatal crash: TypeError: Cannot read properties of undefined.
+
+The optional chaining operator (?.) alters this behavior. It tells the JavaScript engine: "Look at the object on the left. If it exists, navigate inside it and grab the key. If it is null or undefined, stop searching immediately and just return undefined instead of crashing."
+
+a?.vulns ?? []
+While optional chaining stops your code from crashing, returning undefined introduces a secondary problem. If downstream code expects a real array to run a loop (like .forEach()), running a loop on undefined will still trigger a crash.
+
+The nullish coalescing operator (??) provides a fallback value. It reads: "Look at the expression on my left side. If it evaluates to null or undefined, ignore it and swap it out for the fallback value on my right side."
+
+CHALLANGES->1. needing to extract package-lock.json instead of package.json, different versions of dependencies, 
+and ranges of version causes nothing to be returned from osv
+
+eslint config-> need to use flat config, basically eslint was applying the same rules to check all kind of files
+js ts tsx jsx, casusing js files to be filled with a lot of error, 
+to fix this we need flat config, its bascially exporting of array that defines how to deal with different extensions
+
+A. "Flat Config" Architecture
+Older ESLint used .eslintrc.json with complex inheritance (extends). This file uses the new Flat Config format (eslint.config.js).
+
+Key detail: It uses an array of objects where each object explicitly states which files it targets. It’s flat, linear, and easier to debug.
+
+B. Parser Separation (JS vs. TS)
+Explain why there are different blocks:
+
+JS Files use standard ECMAScript parsing.
+
+TS Files require tseslint.parser. This engine actually invokes the TypeScript compiler to analyze types under the hood. You don't want to run this heavy parser on regular JS files because it degrades build performance.
+
+C. Rule Customization & Overrides
+Point out the specific choices made in the rules:
+
+The Log Strategy: no-console: "off" is chosen, likely because this is a Node.js/Backend project where server logs are necessary, or standard logging is permitted.
+
+The Underscore Pattern: argsIgnorePattern: "^_"(regex) is configured so developers can write code like changeUser((_id, name) => ...) without the linter yelling about the unused _id variable.
+
+3. The "Gotchas" They Will Trap You With (And the Fixes)
+An interviewer might ask: "Are there any bugs or performance issues with how this is currently written?" Be ready to counter with these two points:
+
+Trap 1: Duplicate Rule Execution
+The Problem: In the original code, TypeScript files are evaluated by both the JavaScript no-unused-vars rule and the @typescript-eslint/no-unused-vars rule.(Basically the eslint is checking both using javascript and typescript rules on typescript files, so a warning generated by js rules for one issue, and ts rules might generate warning for the same issue, for fixing we are below)
+
+The Fix: Tell them, "I would optimize this by explicitly setting "no-unused-vars": "off" inside the TypeScript block to prevent redundant linter errors."
+
+Trap 2: Code Duplication (DRY Principle)
+The Problem: The TypeScript setup splits its logic across two separate blocks (one using .map(), and one below it targeting the same files).
+
+The Fix: Tell them, "I would consolidate the TypeScript rules into a single array object or use the modern tseslint.config() helper utility to make the file more maintainable."
+
+“What bug did you encounter?”
+
+This is the strongest story.
+
+You can honestly say:
+
+Initially TypeScript rules were being applied globally. When scanning JavaScript repositories, ESLint produced parsing problems and poor results. I fixed it by isolating TypeScript configurations to *.ts and *.tsx files while using the standard JavaScript ruleset for JS files.
+
+“Security scanning requires exact dependency versions. I support package-lock.json today and mark scans as incomplete when only version ranges are available.”
+
+StackProbe currently supports npm lockfiles for security scanning. When exact dependency versions cannot be determined, the scan is marked incomplete rather than producing misleading results

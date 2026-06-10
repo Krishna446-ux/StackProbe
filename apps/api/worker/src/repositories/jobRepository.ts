@@ -1,5 +1,5 @@
-import pool from "../lib/db"
-import logger from "../lib/logger"
+import pool from "../lib/db.js"
+import logger from "../lib/logger.js"
 import { ReportInstance } from '../interfaces/report_interface.js';
 
 // const job_columns={

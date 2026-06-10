@@ -1,6 +1,6 @@
-import pool from "../lib/db";
-import logger from '../lib/logger'
-import { findings_interface } from "../interfaces/findings_interface";
+import pool from "../lib/db.js";
+import logger from '../lib/logger.js'
+import findings_interface from "../interfaces/findings_interface.js";
 export async function insertFindings(report_id: string, findings: findings_interface[]) {
     findings = findings.slice(0, 500);
     logger.info("Inserting findings into database")

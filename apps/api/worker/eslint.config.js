@@ -1,40 +1,48 @@
-import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginSecurity from "eslint-plugin-security";
-
+import js from "@eslint/js";
 export default [
+    { ignores: ["**/node_modules/**", "**/dist/**", "**/.git/**"] },
     // 1. Tell ESLint which files to analyze and what to ignore
     {
-        files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-        ignores: ["**/node_modules/**", "**/dist/**", "**/.git/**"]
-    },
-
-    // 2. Load Base Configurations
-    pluginJs.configs.recommended,                  // Standard JS rules
-    ...tseslint.configs.recommended,     // Deep TypeScript structural checks
-    pluginSecurity.configs.recommended,             // Flags regex dos, eval, injection flaws
-
-    // 3. Setup TypeScript Parser Options
-    {
+        // Target standard JS scripts, ES Modules, and React JavaScript components
+        files: ["**/*.js", "**/*.mjs", "**/*.jsx"],
+        ...js.configs.recommended, // Applies standard ECMAScript linting package 
         languageOptions: {
+            //automatically applied espree eslinting
+            ecmaVersion: "latest",// otherwise eslint might reject newer syntax
+            sourceType: "module", // Allows 'import/export' blocks in .mjs and modern .js
             parserOptions: {
-                project: false,                            // Uses your tsconfig.json automatically
-                tsconfigRootDir: import.meta.dirname,
+                ecmaFeatures: {
+                    jsx: true, // Allows the parser to understand HTML-in-JS syntax for .jsx files <div>Hello WOrld</div> otherwise it will say unexpected token <
+                },
             },
         },
-    },
-
-    // 4. Custom Quality Scoring Overrides
-    {
         rules: {
-            // Quality Metrics: Throw errors on messy code
-            "no-unused-vars": "off",                     // Turn off JS version to let TS handle it
-            "@typescript-eslint/no-unused-vars": "error", // Unused variables crash the quality score
-            "no-console": "warn",                        // Warn if production code leaves console.logs
-            "complexity": ["error", { max: 10 }],         // 🔴 Crucial for scoring: Flags functions with too many nested if/else loops
-
-            // Safety & Architecture
-            "@typescript-eslint/no-explicit-any": "error", // Banning 'any' keeps the TS score honest
+            "no-unused-vars": "warn",
+            "no-console": "off", // Keeps your server-side logging intact
         },
     },
+    ...tseslint.configs.recommended.map(config => ({
+        ...config,
+        // 1. Target the files once
+        files: ["**/*.ts", "**/*.tsx"],
+        languageOptions: {
+            parser: tseslint.parser,
+            parserOptions: {
+                ecmaFeatures: {
+                    jsx: true,
+                },
+            },
+        },
+        rules: {
+            // TRAP 1 FIX: Turn off the base JS rule so it stops double-reporting
+            "no-unused-vars": "off",
+
+            // TRAP 2 FIX: Put your custom TS rules right here in the same block!
+            "@typescript-eslint/no-explicit-any": "warn",
+            "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+        },
+    })),
+    pluginSecurity.configs.recommended
 ];
