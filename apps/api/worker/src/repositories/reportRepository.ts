@@ -33,8 +33,8 @@ export async function updateSecurityScore(reportId: string, securityScore: numbe
     }
 }
 export async function updateAiSummary(reportId: string, aiSummary: string | null) {
-    if (aiSummary === null) aiSummary = "AI Summary is Unavailable";
-
+    if (aiSummary === null) aiSummary = "AI summary will be made avaiblable #debug";
+    //AI Summary is Unavailable
     try {
 
         logger.info("Updating AI Summary in report")

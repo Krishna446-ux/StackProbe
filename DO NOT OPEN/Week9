@@ -1,0 +1,10 @@
+WEEK 8-> SImply used google gen ai 
+
+Week 9-> 
+Challenges
+1.Report were getting prefetched, meaning the moment they get created, causing wrong report to be shown
+Needed to fix polling logic
+
+2.needed to fix the loading screen issue, had to check the endpoints and points that recieve to match properly
+
+3.Quality and security score where linear based,converted them to non linear using log

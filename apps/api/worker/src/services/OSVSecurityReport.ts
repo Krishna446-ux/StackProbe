@@ -8,8 +8,8 @@ import fs from 'fs/promises';
 import findings_interface from '../interfaces/findings_interface.js';
 import yaml from 'yaml';
 import yarnLockfile from '@yarnpkg/lockfile';
-import OSVResponse, { OSVQueryResult } from '../interfaces/osv_response_interface.js';
-import { TimerOptions } from 'timers';
+import OSVResponse from '../interfaces/osv_response_interface.js';
+import computeSecurityScore from './calculateSecurityScore.js'
 // Now you can access dependencies directly!
 //This returns an array of key value pair, extracted from an object
 
@@ -57,21 +57,7 @@ function buildOSVBatchRequest(dependencies: Dependency[]) {
         "queries": array
     }
 }
-function computeSecurityScore(findings: findings_interface[]) {
-    if (findings.length === 0) return 100;
-    const weight = {
-        'critical': 10,
-        'high': 5,
-        'medium': 2,
-        'low': 1,
-        "unknown": 0,
-    }
-    let res = 0;
-    for (const finding of findings) {
-        res += (weight as any)[finding.severity]
-    }
-    return Math.max(0, 100 - res);
-}
+
 export async function extractDependenciesFromPackageJson(packageJsonPath: Dirent[]): Promise<Dependency[]> {
     let dependencies: Dependency[] = []
     for (const obj of packageJsonPath) {

@@ -1,6 +1,10 @@
 import { apiGet } from './client';
 import type { Job } from '../types/job.types';
 
+export interface WorkerHealth {
+  status?: string;
+}
+
 /**
  * Fetch a single job by ID.
  * export interface Job {
@@ -24,4 +28,13 @@ export async function getJob(jobId: string): Promise<Job> {
  */
 export async function getJobCurrentStage(jobId: string): Promise<{ current_stage: string }> {
   return apiGet<{ current_stage: string }>(`/job/currentStage/${jobId}`);
+}
+
+/**
+ * Check whether the background worker process is healthy.
+ * Called periodically during polling so the UI can surface a meaningful
+ * error instead of silently stalling when the worker has crashed.
+ */
+export async function getWorkerHealth(): Promise<WorkerHealth> {
+  return apiGet<WorkerHealth>('/health/worker/');
 }

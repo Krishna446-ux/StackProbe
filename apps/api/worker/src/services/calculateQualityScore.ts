@@ -24,9 +24,10 @@ export function calculateQualityScore(eslintJsonData: any) {
     }
 
     // 3. Calculate total penalty deductions
-    const errorPenalty = totalErrors * 5;
-    const warningPenalty = totalWarnings * 1;
-    const complexityPenalty = complexFunctionsCount * 10;
+
+    const errorPenalty = totalErrors === 0 ? 0 : Math.log(totalErrors * 5);
+    const warningPenalty = totalWarnings === 0 ? 0 : Math.log(totalWarnings * 1);
+    const complexityPenalty = complexFunctionsCount === 0 ? 0 : Math.log(complexFunctionsCount * 10);
 
     const totalDeduction = errorPenalty + warningPenalty + complexityPenalty;
 
@@ -35,12 +36,14 @@ export function calculateQualityScore(eslintJsonData: any) {
     const penaltyPerFile = totalDeduction / totalFiles;
 
     // Start at 100 and subtract the penalty per file (scaled up so it hits the score noticeably)
-    let finalScore = Math.round(100 - (penaltyPerFile * 3));
+    let finalScore = Math.round(100 - (penaltyPerFile * 2));
 
     // 5. Cap the score between 0 and 100
-    finalScore = Math.max(0, Math.min(100, finalScore));
+    finalScore = Math.max(0, Math.min(100, Math.floor(finalScore)));
 
 
 
     return finalScore;
 }
+
+

@@ -12,6 +12,7 @@ import {
   Clock,
   Info,
   ChevronRight,
+  AlertOctagon,
 } from 'lucide-react';
 import { ScoreHistoryChart } from '../components/dashboard/ScoreHistoryChart';
 import { SecurityFindingsPanel } from '../components/dashboard/SecurityFindingsPanel';
@@ -43,12 +44,15 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<AnalyzedRepo | null>(null);
   const [reanalyzing, setReanalyzing] = useState(false);
+  // Derived booleans tracked in state so JSX re-renders when they change
+  const [hasSummaryText, setHasSummaryText] = useState(false);
 
   useEffect(() => {
     if (!reportId || !authenticated) return;
     setReport(null);
     setFindings([]);
     setScoreHistory([]);
+    setHasSummaryText(false);
 
     const fetchReportData = async () => {
       setLoadingDetails(true);
@@ -56,26 +60,30 @@ export const ReportPage: React.FC<ReportPageProps> = ({
         const reportData = await getReport(reportId);
         setReport(reportData);
 
+        // AI summary flag — only truthy when there is real text from the backend
+        setHasSummaryText(
+          Boolean(reportData?.ai_summary) &&
+          reportData.ai_summary !== 'AI Summary is Unavailable'
+        );
+
+        // ── Findings ────────────────────────────────────────────────────────
+        // Source of truth: backend findings API. Never fabricate data.
         let findingsData: Finding[] = [];
         try {
           const rawFindings = await getReportFindings(reportId);
-          console.log("RAW FINDINGS:", rawFindings);
+          console.log('RAW FINDINGS:', rawFindings);
           // Backend may return { findings: [...] }, a raw array, or null — normalise all cases
-          findingsData = Array.isArray(rawFindings) ? rawFindings
+          findingsData = Array.isArray(rawFindings)
+            ? rawFindings
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             : Array.isArray((rawFindings as any)?.findings)
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ? (rawFindings as any).findings
               : [];
         } catch (err) {
-          console.warn("Findings API failed (possibly due to missing DB columns). Falling back to mock data.");
-          // Fallback mock findings so UI is populated
-          findingsData = [
-            { finding_id: 'mock-1', report_id: reportId, category: 'security', severity: 'critical', rule: 'detect-object-injection', message: 'Variable Assigned to Object Injection Sink', filePath: 'src/services/api.js', created_at: new Date().toISOString() },
-            { finding_id: 'mock-2', report_id: reportId, category: 'security', severity: 'high', rule: 'no-eval', message: 'Avoid eval()', filePath: 'src/utils/parser.js', created_at: new Date().toISOString() },
-            { finding_id: 'mock-3', report_id: reportId, category: 'quality', severity: 'low', rule: 'no-console', message: 'Unexpected console statement', filePath: 'src/app.js', created_at: new Date().toISOString() },
-            { finding_id: 'mock-4', report_id: reportId, category: 'quality', severity: 'low', rule: 'eqeqeq', message: 'Expected === and instead saw ==', filePath: 'src/index.js', created_at: new Date().toISOString() }
-          ];
+          // Findings API failed — use empty array, never fabricate vulnerabilities.
+          console.error('Findings API failed:', err);
+          findingsData = [];
         }
         setFindings(findingsData);
 
@@ -122,15 +130,20 @@ export const ReportPage: React.FC<ReportPageProps> = ({
     }
   };
 
-  // Derived stats — guard with Array.isArray in case of unexpected API shape
+  // ── Security scan failure detection ─────────────────────────────────────
+  // Backend signals a failed security scan with security_score === -1.
+  const securityScanFailed = report?.security_score === -1;
+
+  // Derived stats — guard with Array.isArray in case of unexpected API shape.
+  // When the security scan failed, do not display fabricated counts.
   const safeFindings = Array.isArray(findings) ? findings : [];
   const qualityIssues = safeFindings.filter(f => (f.category || '').toLowerCase() !== 'security').length;
-  const securityIssues = safeFindings.filter(f => (f.category || '').toLowerCase() === 'security').length;
-  const criticalCount = safeFindings.filter(f => (f.severity || '').toLowerCase() === 'critical').length;
-
-  // AI summary display logic
-  const scanComplete = report?.scan_complete === true;
-  const hasSummaryText = report?.ai_summary && report.ai_summary !== 'AI Summary is Unavailable';
+  const securityIssues = securityScanFailed
+    ? null  // unknown — scan did not complete
+    : safeFindings.filter(f => (f.category || '').toLowerCase() === 'security').length;
+  const criticalCount = securityScanFailed
+    ? null
+    : safeFindings.filter(f => (f.severity || '').toLowerCase() === 'critical').length;
 
   /* ─── Loading ────────────────────────────────────────────── */
   if (loadingDetails) {
@@ -151,6 +164,19 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   /* ─── Main render ────────────────────────────────────────── */
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
+
+      {/* ── Security scan failure banner ─────────────────────── */}
+      {securityScanFailed && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <AlertOctagon size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-amber-400">Security scan could not be completed</p>
+            <p className="text-xs text-amber-300/70 mt-0.5">
+              The security scan failed (e.g. OSV timeout or service unavailable). Please re-run the analysis.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -198,32 +224,38 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             {
               label: 'Quality Score',
               value: report.quality_score,
+              displayValue: String(report.quality_score),
               sub: 'out of 100',
               icon: <TrendingUp size={13} className="text-green-500" />,
               color: 'text-white',
             },
             {
               label: 'Security Score',
+              // Never display -1; show "Unavailable" when scan failed
               value: report.security_score,
-              sub: 'out of 100',
-              icon: <AlertTriangle size={13} className="text-amber-500" />,
-              color: 'text-white',
+              displayValue: securityScanFailed ? 'N/A' : String(report.security_score),
+              sub: securityScanFailed ? 'scan unavailable' : 'out of 100',
+              icon: <AlertTriangle size={13} className={securityScanFailed ? 'text-amber-500' : 'text-amber-500'} />,
+              color: securityScanFailed ? 'text-amber-500' : 'text-white',
             },
             {
               label: 'Total Findings',
               value: findings.length,
+              displayValue: String(findings.length),
               sub: 'issues found',
               icon: <BarChart2 size={13} className="text-zinc-500" />,
               color: 'text-white',
             },
             {
               label: 'Critical',
+              // Show "N/A" when we don't have reliable security data
               value: criticalCount,
-              sub: 'critical issues',
+              displayValue: criticalCount === null ? 'N/A' : String(criticalCount),
+              sub: criticalCount === null ? 'scan unavailable' : 'critical issues',
               icon: <ShieldAlert size={13} className="text-red-500" />,
-              color: criticalCount > 0 ? 'text-red-400' : 'text-white',
+              color: criticalCount !== null && criticalCount > 0 ? 'text-red-400' : criticalCount === null ? 'text-amber-500' : 'text-white',
             },
-          ].map(({ label, value, sub, icon, color }) => (
+          ].map(({ label, displayValue, sub, icon, color }) => (
             <div
               key={label}
               className="rounded-lg border border-white/[0.07] p-4 flex flex-col justify-between gap-2"
@@ -234,7 +266,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                 {icon}
               </div>
               <div>
-                <p className={`text-2xl font-bold font-mono ${color}`}>{value}</p>
+                <p className={`text-2xl font-bold font-mono ${color}`}>{displayValue}</p>
                 <p className="text-[10px] text-zinc-600 mt-0.5">{sub}</p>
               </div>
             </div>
@@ -286,12 +318,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           </span>
         </div>
 
-        {/* Conditional rendering based on scan_complete */}
-        {!scanComplete ? (
-          <p className="text-xs text-amber-500/80 bg-amber-500/5 border border-amber-500/20 rounded px-3 py-2">
-            Analysis incomplete. AI Summary unavailable until scanning finishes.
-          </p>
-        ) : hasSummaryText ? (
+        {/* Show summary if it exists; it's available regardless of security scan status */}
+        {hasSummaryText ? (
           <p className="text-sm text-zinc-300 leading-relaxed">
             {report.ai_summary}
           </p>
@@ -300,7 +328,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
         )}
       </div>
 
-      {/* ── Score History Chart (kept per requirements) ─────── */}
+      {/* ── Score History Chart ─────────────────────────────── */}
       <div
         className="rounded-lg border border-white/[0.07] p-4"
         style={{ background: 'var(--sp-surface)' }}
@@ -320,13 +348,21 @@ export const ReportPage: React.FC<ReportPageProps> = ({
         <div className="flex items-center gap-2">
           <ShieldCheck size={13} className="text-emerald-500" />
           <h3 className="text-xs font-semibold text-zinc-300">Security Analysis</h3>
-          {securityIssues > 0 && (
+          {/* Only show real counts when the scan actually ran */}
+          {!securityScanFailed && securityIssues !== null && securityIssues > 0 && (
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
               {securityIssues} vuln
             </span>
           )}
         </div>
-        <SecurityFindingsPanel findings={safeFindings} />
+        {/* When scan failed, show a contextual notice instead of the panel */}
+        {securityScanFailed ? (
+          <p className="text-xs text-amber-500/80 bg-amber-500/5 border border-amber-500/20 rounded px-3 py-2">
+            Security scan could not be completed. Please re-run the analysis.
+          </p>
+        ) : (
+          <SecurityFindingsPanel findings={safeFindings} />
+        )}
       </div>
 
       {/* ── Findings Table ───────────────────────────────────── */}
@@ -338,7 +374,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           <FileCode size={13} className="text-blue-400" />
           <h3 className="text-xs font-semibold text-zinc-300">All Findings</h3>
           <span className="text-[10px] text-zinc-600">
-            {qualityIssues} quality · {securityIssues} security
+            {qualityIssues} quality
+            {!securityScanFailed && securityIssues !== null && ` · ${securityIssues} security`}
           </span>
         </div>
         <FindingsTable findings={safeFindings} />

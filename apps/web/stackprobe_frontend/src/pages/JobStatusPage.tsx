@@ -49,7 +49,7 @@ const stages = [
 function getStageIndex(currentStage: string): number {
   const s = (currentStage || '').toUpperCase();
   if (s === 'COMPLETE') return stages.length;   // all done (past last)
-  if (s === 'FAILED')   return stages.length;   // treat failed as all done visually
+  if (s === 'FAILED') return stages.length;   // treat failed as all done visually
   const idx = stages.findIndex((st) => st.key === s);
   return idx; // -1 for PENDING / unknown
 }
@@ -100,8 +100,10 @@ export const JobStatusPage: React.FC<JobStatusPageProps> = ({
     const interval = setInterval(async () => {
       try {
         const data = await getJobCurrentStage(routeJobId);
-        if (data?.current_stage) {
-          setCurrentStage(data.current_stage.toUpperCase());
+        console.log("Stage API response:", data);
+        if (data) {
+          console.log("Setting stage:", data.current_stage);
+          setCurrentStage((data as string).toUpperCase());
         }
       } catch {
         // Silently ignore — top-level polling in useJobPolling handles errors
@@ -111,8 +113,8 @@ export const JobStatusPage: React.FC<JobStatusPageProps> = ({
     return () => clearInterval(interval);
   }, [routeJobId, status]);
 
-  const isFailed = currentStage === 'FAILED' || (status || '').toUpperCase() === 'FAILED';
   const stageIndex = getStageIndex(currentStage);
+  const isFailed = currentStage === 'FAILED' || (status || '').toUpperCase() === 'FAILED';
   const progress = getProgress(currentStage);
   const { title: headlineTitle, sub: headlineSub } = getHeadline(currentStage);
 
@@ -176,7 +178,7 @@ export const JobStatusPage: React.FC<JobStatusPageProps> = ({
         {/* Pipeline stages */}
         <div className="space-y-2">
           {stages.map((stage, idx) => {
-            const done   = idx < stageIndex;
+            const done = idx < stageIndex;
             const active = idx === stageIndex;
             return (
               <div
