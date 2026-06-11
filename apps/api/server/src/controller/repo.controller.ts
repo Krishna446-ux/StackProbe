@@ -1,6 +1,6 @@
 import { createRepo } from '../services/repo.services'
 import { createJob } from '../services/repo.services'
-import { activeJob, completedJob } from '../services/repo.services'
+import { activeJob, completedJob, getAnalyzedRepositories, getRepositoryHistory } from '../services/repo.services'
 import { RepoInterface } from '../interfaces/repoInterface'
 import { JobInterface } from '../interfaces/jobInterface'
 import { Request, Response } from 'express'
@@ -104,13 +104,14 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
             "job_id": jobRecord.job_id,
             "repo_id": details.repo_id,
             "repo_url": repoUrl
-        }, {
-            attempts: 3,
-            backoff: {
-                type: "exponential",
-                delay: 1000
-            }
-        });
+        },);
+        //  {
+        //     attempts: 3,
+        //     backoff: {
+        //         type: "exponential",
+        //         delay: 1000
+        //     }
+        // }
         logger.info({
             "job_id": jobRecord.job_id,
             "repo_id": details.repo_id,
@@ -144,4 +145,22 @@ export const makeRepoRecord = async (req: Request, res: Response) => {
     }
 
 
+}
+export const listAnalyzedRepos = async (req: Request, res: Response) => {
+    try {
+        const repos = await getAnalyzedRepositories();
+        res.json(repos);
+    } catch (err: any) {
+        res.status(500).json({ error: err?.message ?? "Unknown error" });
+    }
+}
+
+export const repoHistory = async (req: Request, res: Response) => {
+    try {
+        const { repoId } = req.params;
+        const history = await getRepositoryHistory(repoId as string);
+        res.json(history);
+    } catch (err: any) {
+        res.status(500).json({ error: err?.message ?? "Unknown error" });
+    }
 }

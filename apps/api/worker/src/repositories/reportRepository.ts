@@ -16,7 +16,7 @@ export async function insertReport(report: ReportInstance): Promise<string> {
 
 export async function updateSecurityScore(reportId: string, securityScore: number | null) {
     try {
-
+        if (securityScore === null) securityScore = -1;
         logger.info("Updating score in report")
         const { rows } = await pool.query("update reports set security_score=$1,scan_completed=true where report_id=$2 RETURNING *",
             [securityScore, reportId])
@@ -33,9 +33,8 @@ export async function updateSecurityScore(reportId: string, securityScore: numbe
     }
 }
 export async function updateAiSummary(reportId: string, aiSummary: string | null) {
-    if (aiSummary === null) {
-        aiSummary = "AI Summary is Unavailable";
-    }
+    if (aiSummary === null) aiSummary = "AI Summary is Unavailable";
+
     try {
 
         logger.info("Updating AI Summary in report")

@@ -81,6 +81,11 @@ export const setJobStatus = async (job_id: string, status: string, faliure_reaso
         throw err;
     }
 };
+export async function updateJobCurrentStage(jobId: string, currentStage: string): Promise<void> {
+
+    await pool.query(`UPDATE jobs SET current_stage = $1 WHERE job_id = $2`, [currentStage, jobId]);
+
+}
 /*
 This is how the insides of row[0] looks like
 {

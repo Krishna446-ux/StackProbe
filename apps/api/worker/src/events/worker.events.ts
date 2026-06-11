@@ -1,8 +1,8 @@
 import logger from '../lib/logger.js'
-import { setJobStatus } from '../repositories/jobRepository.js'
-
+import { setJobStatus, updateJobCurrentStage } from '../repositories/jobRepository.js'
 export const onCompletion = async (job: any) => {
     await setJobStatus(job.data.job_id, "COMPLETE", "");
+    await updateJobCurrentStage(job.data.job_id, "COMPLETE");
     logger.info(
         {
             jobId: job.id,
@@ -22,4 +22,5 @@ export const onFaliure = async (job: any, err: Error) => {
     logger.error(err)
     const errorMessage = err.message || "Something went wrong during execution";
     await setJobStatus(job.data.job_id, "FAILED", errorMessage);
+    await updateJobCurrentStage(job.data.job_id, "FAILED");
 };

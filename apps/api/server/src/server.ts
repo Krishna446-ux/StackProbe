@@ -4,7 +4,7 @@ import pinoHttp from "pino-http";
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
 import { healthDB, healthServer, pinoPretty } from './controller/health.controller'
-import { jobDetails, reportDetails } from './front_end_controllers/job_report_details'
+import { jobDetails, reportDetails, getReportFindings, getJobCurrentStage } from './front_end_controllers/job_report_details'
 import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
@@ -28,7 +28,8 @@ app.use('/health', health_router)
 //FRONT END APIS
 app.get("/jobs/:id", jwtAuthenticator, jobDetails);
 app.get("/reports/:id", jwtAuthenticator, reportDetails);
-
+app.get("/reports/:reportId/findings", jwtAuthenticator, getReportFindings);
+app.get("/job/currentStage/:jobId", jwtAuthenticator, getJobCurrentStage);
 //FRONT END FINISH
 app.get('/redis',);
 

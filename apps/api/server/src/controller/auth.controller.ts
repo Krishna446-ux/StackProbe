@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { tokenFetch, userRes, userRecord } from '../services/github.services';
-
+import 'dotenv/config'
 var jwt = require('jsonwebtoken')
 import "dotenv/config";
 let crypto: any;
@@ -66,7 +66,7 @@ export const githubAccessToken = async (req: Request, res: Response) => {
         "secure": process.env.NODE_ENV === "production",
         "sameSite": "lax"
     })
-    res.redirect('http://localhost:5173/');
+    res.redirect(process.env.FRONTEND_URL ?? "http://localhost:5173");
 };
 export const authenticateUser = async (req: Request, res: Response) => {
     try {
@@ -80,4 +80,12 @@ export const authenticateUser = async (req: Request, res: Response) => {
             "authenticated": false
         });
     }
+}
+export const logoutUser = (req: Request, res: Response) => {
+    res.clearCookie("jwtAuth", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
+    });
+    return res.json({ success: true });
 }

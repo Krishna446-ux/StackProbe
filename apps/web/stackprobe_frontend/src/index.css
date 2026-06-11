@@ -1,1 +1,153 @@
 @import "tailwindcss";
+
+/* ══════════════════════════════════════════════════
+   Theme tokens — dark (default)
+   ══════════════════════════════════════════════════ */
+:root {
+  --sp-bg:          #0d0d0f;
+  --sp-sidebar:     #111113;
+  --sp-surface:     #141416;
+  --sp-surface2:    #1a1a1d;
+  --sp-border:      rgba(255, 255, 255, 0.07);
+  --sp-border-s:    rgba(255, 255, 255, 0.05);
+  --sp-text-1:      #f4f4f5;
+  --sp-text-2:      #a1a1aa;
+  --sp-text-3:      #71717a;
+  --sp-text-4:      #52525b;
+}
+
+html {
+  background-color: #000000;
+}
+body {
+  background-color: var(--sp-bg);
+  color: var(--sp-text-1);
+}
+
+/* ══════════════════════════════════════════════════
+   Light mode overrides
+   ══════════════════════════════════════════════════ */
+html.sp-light {
+  background-color: #ffffff;
+  --sp-bg:          #fafafa;
+  --sp-sidebar:     #f4f4f5;
+  --sp-surface:     #ffffff;
+  --sp-surface2:    #f4f4f5;
+  --sp-border:      rgba(0, 0, 0, 0.18);
+  --sp-border-s:    rgba(0, 0, 0, 0.12);
+  --sp-text-1:      #09090b;
+  --sp-text-2:      #3f3f46;
+  --sp-text-3:      #71717a;
+  --sp-text-4:      #a1a1aa;
+  color-scheme:     light;
+}
+
+/* ── Light-mode: body & structural backgrounds ─────── */
+html.sp-light body {
+  background-color: var(--sp-bg);
+  color: var(--sp-text-1);
+}
+
+/* ── Light-mode: white-based borders → dark borders ── */
+html.sp-light [class*="border-white"] {
+  border-color: var(--sp-border) !important;
+}
+html.sp-light [class*="divide-white"] > * {
+  border-color: var(--sp-border-s) !important;
+}
+
+/* ── Light-mode: disabled button readability ────────── */
+html.sp-light button:disabled,
+html.sp-light button[disabled] {
+  background-color: #e4e4e7 !important;
+  color: #71717a !important;
+  border-color: #d4d4d8 !important;
+  opacity: 0.85 !important;
+}
+html.sp-light button:disabled *,
+html.sp-light button[disabled] * {
+  color: #71717a !important;
+  stroke: #71717a !important;
+}
+
+/* ── Light-mode: zinc text overrides ─────────────── */
+html.sp-light .text-white,
+html.sp-light .text-zinc-100,
+html.sp-light .text-zinc-200 {
+  color: var(--sp-text-1) !important;
+}
+html.sp-light .text-zinc-300,
+html.sp-light .text-zinc-400 {
+  color: var(--sp-text-2) !important;
+}
+html.sp-light .text-zinc-500 {
+  color: var(--sp-text-3) !important;
+}
+html.sp-light .text-zinc-600,
+html.sp-light .text-zinc-700 {
+  color: var(--sp-text-4) !important;
+}
+
+/* ── Light-mode: bg-zinc overrides ─────────────────── */
+html.sp-light .bg-zinc-900,
+html.sp-light .bg-zinc-950 {
+  background-color: var(--sp-surface) !important;
+}
+
+/* ── Light-mode: Arbitrary hex bg overrides ────────── */
+html.sp-light [class*="bg-[#0d0d0f]"] {
+  background-color: var(--sp-bg) !important;
+}
+
+html.sp-light [class*="bg-[#141416]"],
+html.sp-light [class*="bg-[#1e1e20]"],
+html.sp-light [class*="bg-[#222224]"],
+html.sp-light [class*="bg-[#161618]"],
+html.sp-light [class*="bg-[#1a1a1d]"],
+html.sp-light [class*="bg-[#2a2a2e]"],
+html.sp-light [class*="hover:bg-[#323236]"]:hover {
+  background-color: var(--sp-surface) !important;
+}
+
+html.sp-light [class*="hover:bg-[#181818]"]:hover,
+html.sp-light [class*="hover:bg-[#1a1a1d]"]:hover {
+  background-color: var(--sp-surface2) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   Font size presets (affects all rem-based Tailwind sizes)
+   ══════════════════════════════════════════════════ */
+html.sp-font-sm { font-size: 13px; }
+html.sp-font-md { font-size: 15px; }
+html.sp-font-lg { font-size: 17px; }
+
+/* ══════════════════════════════════════════════════
+   Shared CSS utility classes (theme-aware)
+   ══════════════════════════════════════════════════ */
+.sp-bg       { background-color: var(--sp-bg); }
+.sp-surface  { background-color: var(--sp-surface); }
+.sp-sidebar  { background-color: var(--sp-sidebar); }
+.sp-border   { border-color: var(--sp-border); }
+.sp-text-1   { color: var(--sp-text-1); }
+.sp-text-2   { color: var(--sp-text-2); }
+.sp-text-3   { color: var(--sp-text-3); }
+
+/* ══════════════════════════════════════════════════
+   Limitations accordion styling
+   ══════════════════════════════════════════════════ */
+details.sp-details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+details.sp-details summary::-webkit-details-marker { display: none; }
+details.sp-details summary .sp-chevron {
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+details.sp-details[open] summary .sp-chevron {
+  transform: rotate(90deg);
+}

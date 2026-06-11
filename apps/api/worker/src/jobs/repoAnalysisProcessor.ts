@@ -1,19 +1,20 @@
 //start from here writing the worker function, watch the video of chai aur code for finding what are queue events
 import { ReportInstance } from '../interfaces/report_interface.js';
 import logger from '../lib/logger.js'
-import { setJobStatus } from '../repositories/jobRepository.js'
+import { setJobStatus, updateJobCurrentStage } from '../repositories/jobRepository.js'
 import { cloneRepo } from '../services/cloneRepo.js'
 import fileSearcher from '../services/filesTracker.js'
 import esLint from '../services/eslint.js'
 import { calculateQualityScore } from '../services/calculateQualityScore.js'
 import { reportFindings } from '../services/reportFinding.js'
 import { insertReport, updateSecurityScore, updateAiSummary } from '../repositories/reportRepository.js'
-import OSVSecurityReport, { extractDependenciesFromPackageJson, extractDependenciesFromPackageLock } from '../services/OSVSecurityReport.js'
+import OSVSecurityReport, { extractDependenciesFromPackageJson, extractDependenciesFromPackageLock, extractDependenciesFromPnpmLock, extractDependenciesFromYarnDirents } from '../services/OSVSecurityReport.js'
 import fs from 'fs/promises'
 import path from 'path';
 import findings_interface from '../interfaces/findings_interface.js';
 import { insertFindings } from '../repositories/findingRepository.js';
 import aiSummaryRequest from '../services/generateAiSummary.js'
+import Dependency from '../interfaces/dependency_interface.js';
 //use logger instead of console.log for logging stuff 
 //processorFunction
 
@@ -44,12 +45,15 @@ const runAnalysis = async (job: any) => {
 
     console.log("Running")
     // give back cloned repo path
+    await updateJobCurrentStage(job.data.job_id, "CLONING")
     const repoPath: string = await cloneRepo(job.data.repo_url, job.data.job_id);
+
     // gives back list of files, but more importantly throws an error in case the repo does not has any js/ts/tsx/jsx files
     const files: string[] = await fileSearcher(job.data.job_id);
     //if (files.length === 0) //
     const eslint = await esLint(repoPath);
     logger.info("Calculating score")
+    await updateJobCurrentStage(job.data.job_id, "QUALITY_ANALYSIS")
     const quality_score = calculateQualityScore(eslint);
 
 
@@ -67,50 +71,94 @@ const runAnalysis = async (job: any) => {
 
     //extracting the dependencies from the package,json
 
-    let packageFiles = await fs.readdir(repoPath, {
+    const workingDirectory = await fs.readdir(repoPath, {
         withFileTypes: true,
         recursive: true,
     });
 
-    //finding all package.json, can be a bit array
-    const packageLockFiles = packageFiles.filter(file => {
+    //     export default interface Dependency {
+    //     "packageName": string;
+    //     "version": string;
+    //     "isDev": boolean;
+    // }
+
+    //finding all package_lock.json, can be a bit array
+    const packageLockFiles = workingDirectory.filter(file => {
         return !file.parentPath.includes("node_modules") && /package-lock.json$/.test(file.name);
     });
-    packageFiles = packageFiles.filter(file => {
+    const packageFiles = workingDirectory.filter(file => {
         return !file.parentPath.includes("node_modules") && /package.json$/.test(file.name);
     });
-    let security_report: { findings: findings_interface[], securityScore: number | null, scanCompleted: boolean } | null = null;
+
+    //findings out pnpm-lock.yaml files
+    const pnpmFiles = workingDirectory.filter(file => {
+        return !file.parentPath.includes("node_modules") && /pnpm-lock.yaml$/.test(file.name);
+    });
+
+    //working out with 'yarn.lock' files
+
+    const yarnFiles = workingDirectory.filter(file => {
+        return !file.parentPath.includes("node_modules") && /yarn.lock$/.test(file.name);
+    });
+
+    let dependencies: Dependency[] = [];
     if (packageLockFiles.length > 0) {
         // console.log(packageLockFiles)
-        const dependencies = await extractDependenciesFromPackageLock(packageFiles);
-        if (dependencies.length > 0) {
-            security_report = await OSVSecurityReport(dependencies)
-
-        }
+        dependencies = [...dependencies, ...(await extractDependenciesFromPackageLock(packageLockFiles)) ?? []];
     }
-    else {
+    if (packageFiles.length > 0) {
         // console.log(packageFiles, "Package")
-        const dependencies = await extractDependenciesFromPackageJson(packageLockFiles);
-        if (dependencies.length > 0) {
-            security_report = await OSVSecurityReport(dependencies)
-        }
+        dependencies = [...dependencies, ...(await extractDependenciesFromPackageJson(packageFiles))];
+
     }
-    if (security_report !== null) {
+    if (pnpmFiles.length > 0) {
+        dependencies = [...dependencies, ...(await extractDependenciesFromPnpmLock(pnpmFiles))];
+    }
+
+    if (yarnFiles.length > 0) {
+        dependencies = [...dependencies, ...(await extractDependenciesFromYarnDirents(yarnFiles))];
+    }
+
+
+    let security_report: { findings: findings_interface[], securityScore: number | null, scanCompleted: boolean } | null = null;
+    if (dependencies.length > 0) {
+        //making sure that dependencies from all the files are not the same thing 
+        const set = new Set<string>();
+        dependencies = dependencies.filter(dependency => {
+            const string = `${dependency.packageName}@${dependency.version}`;
+            if (!set.has(string)) {
+                set.add(string);
+                return true;
+            }
+            return false;
+        })
+        await updateJobCurrentStage(job.data.job_id, "SECURITY_SCAN")
+        security_report = await OSVSecurityReport(dependencies)
+    }
+    if (security_report?.scanCompleted) {
 
         logger.info("Security Report has been generated")
         //update security score
-        await updateSecurityScore(report_id, security_report?.securityScore ?? null)
+        await updateSecurityScore(report_id, security_report.securityScore)
         logger.info("Inserting findings of security report")
         //inserting findings of security report
         await insertFindings(report_id, security_report.findings);
+    }
+    else {
+        await updateSecurityScore(report_id, -1)
+        logger.warn("Security Report scan incomplete")
+        //inserting findings of security report
+        //await insertFindings(report_id, security_report?.findings);
     }
 
     //creating ai summary
     logger.info("Generating AI Summary")
     const findings = [...security_report?.findings ?? [], ...quality_findings];
+    await updateJobCurrentStage(job.data.job_id, "AI_SUMMARY")
     const summary = await aiSummaryRequest(findings);
+    console.log(JSON.stringify(summary, null, 2));
     const message = ((summary as any)?.candidates?.[0]?.content?.parts?.[0]?.text) ?? null;
-    console.log(message);
+    logger.info({ message }, "AI SUMMARY");
     logger.info("updating ai_summary inside the report")
     await updateAiSummary(report_id, message);
 

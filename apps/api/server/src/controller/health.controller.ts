@@ -55,6 +55,7 @@ export const healthRedis = async (req: Request, res: Response): Promise<void> =>
 export const queueStats = async (req: Request, res: Response) => {
     res.json(await myQueue.getJobCounts());
 }
+
 export const pinoPretty = {
     // Only use pretty printing in development to save performance in production
     transport: process.env.NODE_ENV !== "production"

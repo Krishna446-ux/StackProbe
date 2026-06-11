@@ -146,3 +146,41 @@ export const completedJob = async (repo_id: string): Promise<any> => {
         success: false,
     }
 }
+export const getAnalyzedRepositories = async (): Promise<any[]> => {
+    //basicallt this query runs for each repositories, and finds out the latest completed report for them, note that the subquery given below will run for each row
+    const { rows } = await pool.query(`
+        SELECT 
+          r.repo_id,
+          r.owner,
+          r.name,
+          rep.report_id,
+          rep.quality_score,
+          rep.security_score,
+          rep.created_at AS analysis_date
+        FROM repositories r
+        JOIN jobs j ON r.repo_id = j.repo_id
+        JOIN reports rep ON j.job_id = rep.job_id
+        WHERE j.status = 'COMPLETE'
+          AND rep.created_at = (
+            SELECT MAX(rep2.created_at)
+            FROM jobs j2
+            JOIN reports rep2 ON j2.job_id = rep2.job_id
+            WHERE j2.repo_id = r.repo_id AND j2.status = 'COMPLETE'
+          )
+        ORDER BY rep.created_at DESC
+    `);
+    return rows;
+}
+
+export const getRepositoryHistory = async (repoId: string): Promise<any[]> => {
+    const { rows } = await pool.query(`
+        SELECT 
+          rep.created_at AS date,
+          rep.quality_score AS score
+        FROM jobs j
+        JOIN reports rep ON j.job_id = rep.job_id
+        WHERE j.repo_id = $1 AND j.status = 'COMPLETE'
+        ORDER BY rep.created_at ASC
+    `, [repoId]);
+    return rows;
+}
