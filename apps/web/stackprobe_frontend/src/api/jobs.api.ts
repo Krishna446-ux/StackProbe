@@ -19,7 +19,7 @@ export interface WorkerHealth {
 */
 
 export async function getJob(jobId: string): Promise<Job> {
-  return apiGet<Job>(`/jobs/${jobId}`);
+  return apiGet<Job>(`/api/jobs/${jobId}`);
 }
 
 /**
@@ -27,7 +27,7 @@ export async function getJob(jobId: string): Promise<Job> {
  * Returns values: PENDING | CLONING | QUALITY_ANALYSIS | SECURITY_SCAN | AI_SUMMARY | COMPLETE | FAILED
  */
 export async function getJobCurrentStage(jobId: string): Promise<string> {
-  return apiGet<string>(`/job/currentStage/${jobId}`);
+  return apiGet<string>(`/api/job/currentStage/${jobId}`);
 }
 
 /**
@@ -36,5 +36,5 @@ export async function getJobCurrentStage(jobId: string): Promise<string> {
  * error instead of silently stalling when the worker has crashed.
  */
 export async function getWorkerHealth(): Promise<WorkerHealth> {
-  return apiGet<WorkerHealth>('/health/worker/');
+  return apiGet<WorkerHealth>('/api/health/worker/');
 }

@@ -1,5 +1,5 @@
 const express = require('express')
-import { Request, Response } from 'express'
+import { Request, Response, Router } from 'express'
 import pinoHttp from "pino-http";
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
@@ -19,33 +19,44 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
-const __dirname = "../../../web/stackprobe_frontend";
-app.use(express.static(path.join(__dirname, "dist")));
+const relativeDirname = "../../web/stackprobe_frontend";
+const __dirname = path.resolve(process.cwd(), relativeDirname);
+//console.log(process.cwd());
+//console.log(__dirname)
 app.use(cookieParser())
 app.use(express.json())
 app.use(pinoHttp(pinoPretty));
 const port = 3000
 
-
+// ═══════════════════════════════════════════════════════
+// All backend endpoints live under /api to avoid
+// collisions with React frontend routes.
+// ═══════════════════════════════════════════════════════
+const apiRouter = Router();
 
 //HEALTH CHECK
-app.use('/health', health_router)
+apiRouter.use('/health', health_router)
 
 //FRONT END APIS
-app.get("/jobs/:id", jwtAuthenticator, jobDetails);
-app.get("/reports/:id", jwtAuthenticator, reportDetails);
-app.get("/reports/:reportId/findings", jwtAuthenticator, getReportFindings);
-app.get("/job/currentStage/:jobId", jwtAuthenticator, getJobCurrentStage);
-//FRONT END FINISH
-app.get('/redis',);
+apiRouter.get("/jobs/:id", jwtAuthenticator, jobDetails);
+apiRouter.get("/reports/:id", jwtAuthenticator, reportDetails);
+apiRouter.get("/reports/:reportId/findings", jwtAuthenticator, getReportFindings);
+apiRouter.get("/job/currentStage/:jobId", jwtAuthenticator, getJobCurrentStage);
 
-app.use("/auth", auth_routes)
+apiRouter.use("/auth", auth_routes)
 //jwtAuthenticator is a middleware, whose job is to check each of these routes, and whenever, if they have came with a valid jwt token or not
-app.use("/repos", jwtAuthenticator, repo_routes)
+apiRouter.use("/repos", jwtAuthenticator, repo_routes)
 
+// Mount all API routes under /api prefix
+app.use("/api", apiRouter);
 
-//This is basically whole react getting served right now
-app.get("*", (_: Request, res: Response) => {
+// ═══════════════════════════════════════════════════════
+// Static React assets + SPA catch-all (must be AFTER /api)
+// ═══════════════════════════════════════════════════════
+app.use(express.static(path.join(__dirname, "dist")));
+
+//This is basically whole react app getting served right now
+app.use((req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 app.listen(port, () => {

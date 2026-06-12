@@ -8,7 +8,7 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ message }) => {
   function handleLogin() {
-    window.location.href = import.meta.env.VITE_BACKEND_URL + '/auth/github';
+    window.location.href = import.meta.env.VITE_BACKEND_URL + '/api/auth/github';
   }
 
   return (

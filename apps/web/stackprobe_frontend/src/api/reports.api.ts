@@ -8,12 +8,12 @@ import type { Finding } from '../types/dashboard.types';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getReport(reportId: string): Promise<any> {
-  return apiGet<any>(`/reports/${reportId}`);
+  return apiGet<any>(`/api/reports/${reportId}`);
 }
 
 /**
  * Fetch findings for a given report.
  */
 export async function getReportFindings(reportId: string): Promise<Finding[]> {
-  return apiGet<Finding[]>(`/reports/${reportId}/findings`);
+  return apiGet<Finding[]>(`/api/reports/${reportId}/findings`);
 }
