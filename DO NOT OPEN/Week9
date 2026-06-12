@@ -17,3 +17,19 @@ build command->cd apps/web/stackprobe_frontend && npm ci && npm run build && cd 
 start command->cd apps/api/server && npm run start
 
 5.needed to create docker to create and run apps that are not nodejs, basically worker requires git, eslint, which are not js, so we need to install these things, that is where docker comes in
+
+
+DockerFile
+FROM node:22
+
+RUN apt-get update && apt-get install -y git
+
+RUN npm install -g eslint
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+CMD ["npm", "start"]
