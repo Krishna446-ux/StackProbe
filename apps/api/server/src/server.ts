@@ -9,7 +9,7 @@ import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
-
+import billi from "../dist"
 //FUTURE TODO: Needs to redirect the user towards the login page in case there jwt token expires
 import 'dotenv/config'
 import cors from 'cors'
@@ -19,7 +19,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
-const relativeDirname = "../../web/stackprobe_frontend";
+const relativeDirname = "../";
 const __dirname = path.resolve(process.cwd(), relativeDirname);
 //console.log(process.cwd());
 
