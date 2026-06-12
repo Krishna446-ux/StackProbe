@@ -1,0 +1,20 @@
+{
+  "name": "stackprobe",
+  "version": "1.0.0",
+  "description": "Analyses Github repos",
+  "homepage": "https://github.com/Krishna446-ux/StackProbe#readme",
+  "bugs": {
+    "url": "https://github.com/Krishna446-ux/StackProbe/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Krishna446-ux/StackProbe.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
