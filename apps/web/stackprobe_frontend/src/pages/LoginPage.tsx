@@ -1,6 +1,7 @@
 import React from 'react';
 import { Logo } from '../components/common/Logo';
 import { CheckCircle2, Info, ChevronRight } from 'lucide-react';
+
 interface LoginPageProps {
   message?: string;
 }
