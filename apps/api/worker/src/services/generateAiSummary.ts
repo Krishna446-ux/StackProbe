@@ -108,8 +108,8 @@ export default async function aiSummaryRequest(findings: findings_interface[]) {
     }
     catch (err: any) {
         logger.error(err);
-        return "AI SUMMARY WILL BE MADE AVALIABLE TO YOU #DEBUG";
-        // AI Summary Unavailable
+        return "AI Summary Unavailable";
+
     }
 
 }

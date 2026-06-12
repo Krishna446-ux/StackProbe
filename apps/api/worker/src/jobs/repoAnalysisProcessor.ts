@@ -86,9 +86,9 @@ const runAnalysis = async (job: any) => {
     const packageLockFiles = workingDirectory.filter(file => {
         return !file.parentPath.includes("node_modules") && /package-lock.json$/.test(file.name);
     });
-    const packageFiles = workingDirectory.filter(file => {
-        return !file.parentPath.includes("node_modules") && /package.json$/.test(file.name);
-    });
+    // const packageFiles = workingDirectory.filter(file => {
+    //     return !file.parentPath.includes("node_modules") && /package.json$/.test(file.name);
+    // });
 
     //findings out pnpm-lock.yaml files
     const pnpmFiles = workingDirectory.filter(file => {
@@ -106,11 +106,11 @@ const runAnalysis = async (job: any) => {
         // console.log(packageLockFiles)
         dependencies = [...dependencies, ...(await extractDependenciesFromPackageLock(packageLockFiles)) ?? []];
     }
-    if (packageFiles.length > 0) {
-        // console.log(packageFiles, "Package")
-        dependencies = [...dependencies, ...(await extractDependenciesFromPackageJson(packageFiles))];
+    // if (packageFiles.length > 0) {
+    //     // console.log(packageFiles, "Package")
+    //     dependencies = [...dependencies, ...(await extractDependenciesFromPackageJson(packageFiles))];
 
-    }
+    // }
     if (pnpmFiles.length > 0) {
         dependencies = [...dependencies, ...(await extractDependenciesFromPnpmLock(pnpmFiles))];
     }
@@ -118,7 +118,6 @@ const runAnalysis = async (job: any) => {
     if (yarnFiles.length > 0) {
         dependencies = [...dependencies, ...(await extractDependenciesFromYarnDirents(yarnFiles))];
     }
-
 
     let security_report: { findings: findings_interface[], securityScore: number | null, scanCompleted: boolean } | null = null;
     if (dependencies.length > 0) {
