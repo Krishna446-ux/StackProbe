@@ -55,7 +55,3 @@ worker.on("completed", onCompletion)
 worker.on("failed", onFaliure)
 //needs controller connection to redis and queue name
 //queue name is analysis 
-
-// const queueEvents = new QueueEvents('paint-pictures', {
-//     connection: { host: 'localhost', port: 6379 }
-// });

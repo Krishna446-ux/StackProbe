@@ -26,8 +26,8 @@ export async function getJob(jobId: string): Promise<Job> {
  * Fetch the worker's real current stage for a job.
  * Returns values: PENDING | CLONING | QUALITY_ANALYSIS | SECURITY_SCAN | AI_SUMMARY | COMPLETE | FAILED
  */
-export async function getJobCurrentStage(jobId: string): Promise<{ current_stage: string }> {
-  return apiGet<{ current_stage: string }>(`/job/currentStage/${jobId}`);
+export async function getJobCurrentStage(jobId: string): Promise<string> {
+  return apiGet<string>(`/job/currentStage/${jobId}`);
 }
 
 /**

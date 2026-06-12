@@ -9,18 +9,24 @@ import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
+
 //FUTURE TODO: Needs to redirect the user towards the login page in case there jwt token expires
 import 'dotenv/config'
 import cors from 'cors'
+import path from 'path';
 const app = express()
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
+const __dirname = "../../../web/stackprobe_frontend";
+app.use(express.static(path.join(__dirname, "dist")));
 app.use(cookieParser())
 app.use(express.json())
 app.use(pinoHttp(pinoPretty));
 const port = 3000
+
+
 
 //HEALTH CHECK
 app.use('/health', health_router)
@@ -38,6 +44,10 @@ app.use("/auth", auth_routes)
 app.use("/repos", jwtAuthenticator, repo_routes)
 
 
+//This is basically whole react getting served right now
+app.get("*", (_: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })

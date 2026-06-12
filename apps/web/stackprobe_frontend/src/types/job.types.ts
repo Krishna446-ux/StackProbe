@@ -5,5 +5,5 @@ export interface Job {
   status: string;
   started_at: Date;
   completed_at: Date;
-  faliure_reason: string;
+  failure_reason: string;
 }

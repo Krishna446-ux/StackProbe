@@ -8,3 +8,6 @@ Needed to fix polling logic
 2.needed to fix the loading screen issue, had to check the endpoints and points that recieve to match properly
 
 3.Quality and security score where linear based,converted them to non linear using log
+
+4.While serving a react file as a static file with express, needed to make sure that the react files do not match
+express routes, route checks for express routes to match then react 

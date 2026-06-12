@@ -99,10 +99,11 @@ export const JobStatusPage: React.FC<JobStatusPageProps> = ({
 
     const interval = setInterval(async () => {
       try {
-        const data = await getJobCurrentStage(routeJobId);
+        //data is current_stage,it is a string not an object
+        const data: string = await getJobCurrentStage(routeJobId);
         console.log("Stage API response:", data);
         if (data) {
-          console.log("Setting stage:", data.current_stage);
+          console.log("Setting stage:", data);
           setCurrentStage((data as string).toUpperCase());
         }
       } catch {

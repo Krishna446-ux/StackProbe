@@ -99,7 +99,6 @@ export function useJobPolling({ jobId, authenticated, navigate, onComplete }: Us
             // FAILED
             setPollingError(
               data?.failure_reason ||
-              (data as any)?.faliure_reason ||
               'Pipeline execution crashed.'
             );
           }

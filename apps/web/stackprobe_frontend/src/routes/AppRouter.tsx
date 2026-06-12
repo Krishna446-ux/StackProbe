@@ -4,6 +4,7 @@ import { JobStatusPage } from '../pages/JobStatusPage';
 import { RepositoriesPage } from '../pages/RepositoriesPage';
 import { ReportPage } from '../pages/ReportPage';
 import { SettingsPage } from '../pages/SettingsPage';
+import { NotFoundPage } from '../pages/NotFoundPage';
 import type { AnalyzedRepo } from '../types/dashboard.types';
 
 interface AppRouterProps {
@@ -44,8 +45,8 @@ export const AppRouter: React.FC<AppRouterProps> = ({
   const routeJobId = currentPath.startsWith('/jobs/') ? pathParts[2] : '';
   const routeReportId = currentPath.startsWith('/reports/') ? pathParts[2] : '';
 
-  // 1. /submit — dashboard with form
-  if (currentPath === '/submit') {
+  // 1. / or /submit — dashboard with form
+  if (currentPath === '/' || currentPath === '/submit') {
     return (
       <SubmitPage
         navigate={navigate}
@@ -96,18 +97,7 @@ export const AppRouter: React.FC<AppRouterProps> = ({
     );
   }
 
-  // Default
-  return (
-    <SubmitPage
-      navigate={navigate}
-      repos={repos}
-      repoUrl={repoUrl}
-      onRepoUrlChange={onRepoUrlChange}
-      force={force}
-      onForceChange={onForceChange}
-      onSubmit={onSubmit}
-      jobId={jobId}
-      pollingError={pollingError}
-    />
-  );
+  // 5. Default fallback to 404 Page when no route hits
+  return <NotFoundPage navigate={navigate} />;
 };
+
