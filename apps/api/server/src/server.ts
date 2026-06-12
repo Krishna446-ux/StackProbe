@@ -9,6 +9,7 @@ import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
+
 //FUTURE TODO: Needs to redirect the user towards the login page in case there jwt token expires
 import 'dotenv/config'
 import cors from 'cors'
@@ -18,7 +19,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
-const relativeDirname = "../";
+const relativeDirname = "../dist";
 const __dirname = path.resolve(process.cwd(), relativeDirname);
 //console.log(process.cwd());
 
@@ -53,15 +54,12 @@ app.use("/api", apiRouter);
 // ═══════════════════════════════════════════════════════
 // Static React assets + SPA catch-all (must be AFTER /api)
 // ═══════════════════════════════════════════════════════
-app.use(express.static(path.join(__dirname, "dist")));
+app.use(express.static(path.join(process.cwd(), "public")));
 
-//This is basically whole react app getting served right now
 app.use((req: Request, res: Response) => {
-    const file = path.join(__dirname, "dist", "index.html");
 
-    console.log("SERVING:", file);
+    res.sendFile(path.join(process.cwd(), "public", "index.html"));
 
-    res.sendFile(file);
 });
 console.log("__dirname =", __dirname);
 console.log("static dir =", path.join(__dirname, "dist"));
