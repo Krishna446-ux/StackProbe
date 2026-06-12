@@ -9,7 +9,6 @@ import auth_routes from './routes/auth.routes'
 import repo_routes from './routes/repo.routes'
 import health_router from './routes/health.routes'
 import { jwtAuthenticator } from './middlewares/authMiddlewares'
-import billi from "../dist"
 //FUTURE TODO: Needs to redirect the user towards the login page in case there jwt token expires
 import 'dotenv/config'
 import cors from 'cors'
