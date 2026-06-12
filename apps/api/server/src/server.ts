@@ -22,7 +22,8 @@ app.use(cors({
 const relativeDirname = "../../web/stackprobe_frontend";
 const __dirname = path.resolve(process.cwd(), relativeDirname);
 //console.log(process.cwd());
-//console.log(__dirname)
+
+console.log(__dirname)
 app.use(cookieParser())
 app.use(express.json())
 app.use(pinoHttp(pinoPretty));
@@ -57,8 +58,15 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 //This is basically whole react app getting served right now
 app.use((req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, "dist", "index.html"));
+    const file = path.join(__dirname, "dist", "index.html");
+
+    console.log("SERVING:", file);
+
+    res.sendFile(file);
 });
+console.log("__dirname =", __dirname);
+console.log("static dir =", path.join(__dirname, "dist"));
+console.log("index =", path.join(__dirname, "dist", "index.html"));
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
