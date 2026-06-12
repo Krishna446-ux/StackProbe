@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Finding } from '../../types/dashboard.types';
-import { ShieldCheck, ShieldAlert, AlertTriangle, AlertCircle } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SecurityFindingsPanelProps {
   findings: Finding[];
 }
 
 export const SecurityFindingsPanel: React.FC<SecurityFindingsPanelProps> = ({ findings }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   // Filter for category = 'security' (case-insensitive)
   const securityFindings = useMemo(() => {
     const sec = findings.filter(
@@ -81,63 +83,100 @@ export const SecurityFindingsPanel: React.FC<SecurityFindingsPanelProps> = ({ fi
         )}
       </div>
 
-      {/* Vulnerabilities Grid List */}
-      <div className="grid gap-3 md:grid-cols-2">
-        {securityFindings.map((finding) => {
-          const sev = (finding.severity || '').toLowerCase();
+      {/* Vulnerabilities Grid List (paginated) */}
+      {(() => {
+        const totalPages = Math.max(1, Math.ceil(securityFindings.length / itemsPerPage));
+        const safePage = Math.min(currentPage, totalPages);
+        const startIdx = (safePage - 1) * itemsPerPage;
+        const paginatedFindings = securityFindings.slice(startIdx, startIdx + itemsPerPage);
 
-          return (
-            <div
-              key={finding.finding_id}
-              className={`flex flex-col justify-between p-4 rounded-xl border backdrop-blur-md transition-all hover:scale-[1.01] ${
-                sev === 'critical'
-                  ? 'bg-rose-950/10 border-rose-900/50 hover:border-rose-700/60 shadow-lg shadow-rose-950/10'
-                  : sev === 'high'
-                  ? 'bg-amber-950/10 border-amber-900/50 hover:border-amber-700/60 shadow-lg shadow-amber-950/10'
-                  : 'bg-zinc-900/30 border-zinc-850 hover:border-zinc-800'
-              }`}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-bold text-zinc-400 truncate max-w-[180px]" title={finding.rule}>
-                    {finding.rule}
+        return (
+          <>
+            <div className="grid gap-3 md:grid-cols-2">
+              {paginatedFindings.map((finding) => {
+                const sev = (finding.severity || '').toLowerCase();
+
+                return (
+                  <div
+                    key={finding.finding_id}
+                    className={`flex flex-col justify-between p-4 rounded-xl border backdrop-blur-md transition-all hover:scale-[1.01] ${
+                      sev === 'critical'
+                        ? 'bg-rose-950/10 border-rose-900/50 hover:border-rose-700/60 shadow-lg shadow-rose-950/10'
+                        : sev === 'high'
+                        ? 'bg-amber-950/10 border-amber-900/50 hover:border-amber-700/60 shadow-lg shadow-amber-950/10'
+                        : 'bg-zinc-900/30 border-zinc-850 hover:border-zinc-800'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-zinc-400 truncate max-w-[180px]" title={finding.rule}>
+                          {finding.rule}
+                        </span>
+                        
+                        {sev === 'critical' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-rose-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 border border-rose-800/35">
+                            <AlertCircle size={10} /> Critical
+                          </span>
+                        ) : sev === 'high' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 border border-amber-800/35">
+                            <AlertTriangle size={10} /> High
+                          </span>
+                        ) : sev === 'medium' || sev === 'warning' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-yellow-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-400 border border-yellow-800/35">
+                            <AlertTriangle size={10} /> Medium
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 border border-blue-800/35">
+                            <ShieldAlert size={10} /> Low
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-zinc-200 leading-relaxed line-clamp-3" title={finding.message}>
+                        {finding.message}
+                      </p>
+                    </div>
+
+                    {finding.filePath && (
+                      <div className="mt-3 pt-2 border-t border-zinc-850/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                        <span className="truncate max-w-[200px]" title={finding.filePath}>
+                          File: {finding.filePath}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination controls */}
+            <div className="flex items-center justify-between text-xs text-zinc-500 px-1 mt-2">
+              <span>Showing {paginatedFindings.length} of {securityFindings.length} security findings</span>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage === 1}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-white/[0.07] bg-[#141416] text-xs text-zinc-400 hover:text-zinc-200 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    <ChevronLeft size={13} /> Prev
+                  </button>
+                  <span className="text-xs text-zinc-600 px-1">
+                    Page {safePage} of {totalPages}
                   </span>
-                  
-                  {sev === 'critical' ? (
-                    <span className="inline-flex items-center gap-1 rounded bg-rose-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 border border-rose-800/35">
-                      <AlertCircle size={10} /> Critical
-                    </span>
-                  ) : sev === 'high' ? (
-                    <span className="inline-flex items-center gap-1 rounded bg-amber-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 border border-amber-800/35">
-                      <AlertTriangle size={10} /> High
-                    </span>
-                  ) : sev === 'medium' || sev === 'warning' ? (
-                    <span className="inline-flex items-center gap-1 rounded bg-yellow-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-400 border border-yellow-800/35">
-                      <AlertTriangle size={10} /> Medium
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded bg-blue-950/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 border border-blue-800/35">
-                      <ShieldAlert size={10} /> Low
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-xs text-zinc-200 leading-relaxed line-clamp-3" title={finding.message}>
-                  {finding.message}
-                </p>
-              </div>
-
-              {finding.filePath && (
-                <div className="mt-3 pt-2 border-t border-zinc-850/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                  <span className="truncate max-w-[200px]" title={finding.filePath}>
-                    File: {finding.filePath}
-                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={safePage === totalPages}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-white/[0.07] bg-[#141416] text-xs text-zinc-400 hover:text-zinc-200 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition"
+                  >
+                    Next <ChevronRight size={13} />
+                  </button>
                 </div>
               )}
             </div>
-          );
-        })}
-      </div>
+          </>
+        );
+      })()}
     </div>
   );
 };
