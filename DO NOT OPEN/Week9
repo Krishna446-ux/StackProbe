@@ -15,3 +15,5 @@ express routes, route checks for express routes to match then react
 build command->cd apps/web/stackprobe_frontend && npm ci && npm run build && cd ../../api/server && mkdir -p public && cp -R ../../web/stackprobe_frontend/dist/* public/ && npm ci
 
 start command->cd apps/api/server && npm run start
+
+5.needed to create docker to create and run apps that are not nodejs, basically worker requires git, eslint, which are not js, so we need to install these things, that is where docker comes in

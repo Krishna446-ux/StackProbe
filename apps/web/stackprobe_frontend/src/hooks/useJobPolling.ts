@@ -54,12 +54,12 @@ export function useJobPolling({ jobId, authenticated, navigate, onComplete }: Us
               const health = await getWorkerHealth();
               if (!(health.status === "ONLINE")) {
                 // Worker is down — stop polling, surface an error.
-                clearInterval(interval);
-                setStatus(currentStatus);
+                setStatus("FAILED");
                 setPollingError(
                   'The analysis worker is currently unavailable. ' +
                   'Please try again later or contact support if the problem persists.'
                 );
+                clearInterval(interval);
                 return;
               }
             } catch {
