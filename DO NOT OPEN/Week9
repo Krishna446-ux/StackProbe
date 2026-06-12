@@ -12,6 +12,6 @@ Needed to fix polling logic
 4.While serving a react file as a static file with express, needed to make sure that the react files do not match
 express routes, route checks for express routes to match then react 
 
-build commmand->cd apps/web/stackprobe_frontend && npm ci && npm run build && cd ../../api/server && mkdir -p public && cp -R ../../web/stackprobe_frontend/dist/* public/ && npm ci && npm run build
+build command->cd apps/web/stackprobe_frontend && npm ci && npm run build && cd ../../api/server && mkdir -p public && cp -R ../../web/stackprobe_frontend/dist/* public/ && npm ci
 
 start command->cd apps/api/server && npm run start

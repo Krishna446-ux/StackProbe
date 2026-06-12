@@ -6,7 +6,7 @@ import "dotenv/config"
 //redis connection
 //using ioredis connection directly or using redis client
 //analysis is the queue name, we export it
-const analysisQueue = new Queue('analysis', { connection: redis })
+const analysisQueue = new Queue('analysis', { connection: redis, })
 export default analysisQueue;
 
 
